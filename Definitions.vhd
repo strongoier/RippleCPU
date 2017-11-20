@@ -29,7 +29,25 @@ package Definitions is
 -- procedure <procedure_name> (<type_declaration> <constant_name>	: in <type_declaration>);
 --
 
-    constant REG_ZERO: std_logic_vector(15 downto 0) := '1111111111111111';
+    constant REG_ZERO         : std_logic_vector(3 downto 0) := "1111";
+    constant REG_SP           : std_logic_vector(3 downto 0) := "1000";
+    constant REG_T            : std_logic_vector(3 downto 0) := "1001";
+    constant REG_IH           : std_logic_vector(3 downto 0) := "1010";
+    constant ALUOp_ADD        : std_logic_vector(3 downto 0) := "0001";
+    constant ALUOp_AND        : std_logic_vector(3 downto 0) := "0010";
+    constant ALUOp_BNOP       : std_logic_vector(3 downto 0) := "0011";
+    constant ALUOp_BEQZ       : std_logic_vector(3 downto 0) := "0100";
+    constant ALUOp_BNEZ       : std_logic_vector(3 downto 0) := "0101";
+    constant ALUOp_SNE        : std_logic_vector(3 downto 0) := "0110";
+    constant ALUOp_OR         : std_logic_vector(3 downto 0) := "0111";
+    constant ALUOp_SLL        : std_logic_vector(3 downto 0) := "1000";
+    constant ALUOp_SRA        : std_logic_vector(3 downto 0) := "1001";
+    constant ALUOp_SUB        : std_logic_vector(3 downto 0) := "1010";
+    constant ALUOp_SLT        : std_logic_vector(3 downto 0) := "1011";
+    constant ALUOp_SLTU       : std_logic_vector(3 downto 0) := "1100";
+    constant ALUSrc_IMMEDIATE : std_logic := '0';
+    constant ALUSrc_REG       : std_logic := '1';
+    
 
 end Definitions;
 
