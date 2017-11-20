@@ -47,7 +47,9 @@ package Definitions is
     constant ALUOp_SLTU       : std_logic_vector(3 downto 0) := "1100";
     constant ALUSrc_IMMEDIATE : std_logic := '0';
     constant ALUSrc_REG       : std_logic := '1';
-    
+    constant FORWARD_ID2EX    : std_logic_vector(1 downto 0) := "00";
+    constant FORWARD_EX2MEM   : std_logic_vector(1 downto 0) := "01";
+    constant FORWARD_MEM2WB   : std_logic_vector(1 downto 0) := "10";
 
 end Definitions;
 

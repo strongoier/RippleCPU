@@ -66,7 +66,17 @@ xst/
 _ngo/
 _xmsgs/
 
+# simulation files
+*.exe
+*.wdb
+fuse.log
+fuse.xmsgs
+fuseRelaunch.cmd
+isim.cmd
+isim.log
+isim/
+xilinxsim.ini
+
 # other files
 .DS_Store
-
 ~$*
