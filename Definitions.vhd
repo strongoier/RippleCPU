@@ -45,6 +45,7 @@ package Definitions is
     constant ALUOp_SUB        : std_logic_vector(3 downto 0) := "1010";
     constant ALUOp_SLT        : std_logic_vector(3 downto 0) := "1011";
     constant ALUOp_SLTU       : std_logic_vector(3 downto 0) := "1100";
+    constant ALUSrc_DEFAULT   : std_logic := '0';
     constant ALUSrc_IMMEDIATE : std_logic := '0';
     constant ALUSrc_REG       : std_logic := '1';
     constant FORWARD_ID2EX    : std_logic_vector(1 downto 0) := "00";
