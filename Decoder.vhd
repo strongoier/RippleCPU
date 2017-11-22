@@ -64,7 +64,7 @@ begin
             MemToReg<='0';
             PCJump<='0';
             ReadReg1<=REG_SP;
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             WriteReg<=("0"&ins(10 downto 8));
             Immediate<=std_logic_vector(resize(signed(ins(7 downto 0)), Immediate'length));
         when "00001"=>
@@ -76,10 +76,10 @@ begin
             RegWrite<='0';
             MemToReg<='0';
             PCJump<='0';
-            ReadReg1<="0000";
-            ReadReg2<="0000";
-            WriteReg<="0000";
-            Immediate<="0000000000000000";
+            ReadReg1<=(others<='0');
+            ReadReg2<=(others<='0');
+            WriteReg<=(others<='0');
+            Immediate<=(others<='0');
         when "00010"=>
             ALUOp<=ALUOp_BNOP;
             ALUSrc<=ALUSrc_DEFAULT;
@@ -89,9 +89,9 @@ begin
             RegWrite<='0';
             MemToReg<='0';
             PCJump<='0';
-            ReadReg1<="0000";
-            ReadReg2<="0000";
-            WriteReg<="0000";
+            ReadReg1<=(others<='0');
+            ReadReg2<=(others<='0');
+            WriteReg<=(others<='0');
             Immediate<=std_logic_vector(resize(signed(ins(10 downto 0)), Immediate'length));
         when "00100"=>
             ALUOp<=ALUOp_BEQZ;
@@ -103,8 +103,8 @@ begin
             MemToReg<='0';
             PCJump<='0';
             ReadReg1<=("0"&ins(10 downto 8));
-            ReadReg2<="0000";
-            WriteReg<="0000";
+            ReadReg2<=(others<='0');
+            WriteReg<=(others<='0');
             Immediate<=std_logic_vector(resize(signed(ins(7 downto 0)), Immediate'length));
         when "00101"=>
             ALUOp<=ALUOp_BNEZ;
@@ -116,8 +116,8 @@ begin
             MemToReg<='0';
             PCJump<='0';
             ReadReg1<=("0"&ins(10 downto 8));
-            ReadReg2<="0000";
-            WriteReg<="0000";
+            ReadReg2<=(others<='0');
+            WriteReg<=(others<='0');
             Immediate<=std_logic_vector(resize(signed(ins(7 downto 0)), Immediate'length));
         when "00110"=>
             ALUSrc<=ALUSrc_IMMEDIATE;
@@ -128,7 +128,7 @@ begin
             MemToReg<='0';
             PCJump<='0';
             ReadReg1<=("0"&ins(7 downto 5));
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             WriteReg<=("0"&ins(10 downto 8));
             if (ins(4 downto 2) = "000") then
                 Immediate<="0000000000001000";
@@ -141,6 +141,7 @@ begin
                 when '1'=>
                     ALUOp<=ALUOp_SRA;
                 when others=>
+                    ALUOp<=ALUOp_DEFAULT;
             end case;
         when "01000"=>
             ALUOp<=ALUOp_ADD;
@@ -152,7 +153,7 @@ begin
             MemToReg<='0';
             PCJump<='0';
             ReadReg1<=("0"&ins(10 downto 8));
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             WriteReg<=("0"&ins(7 downto 5));
             Immediate<=std_logic_vector(resize(signed(ins(3 downto 0)), Immediate'length));
          when "01001"=>
@@ -165,7 +166,7 @@ begin
             MemToReg<='0';
             PCJump<='0';
             ReadReg1<=("0"&ins(10 downto 8));
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             WriteReg<=("0"&ins(10 downto 8));
             Immediate<=std_logic_vector(resize(signed(ins(7 downto 0)), Immediate'length));
          when "01100"=>
@@ -174,7 +175,7 @@ begin
             PCToReg<='0';
             MemToReg<='0';
             PCJump<='0';
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             case ins(10 downto 8) is
                 when "011"=>
                     ALUOp<=ALUOp_ADD;
@@ -188,7 +189,7 @@ begin
                     ALUSrc<=ALUSrc_DEFAULT;
                     RegWrite<='0';
                     ReadReg1<=REG_T;
-                    WriteReg<="0000";
+                    WriteReg<=(others<='0');
                     Immediate<=std_logic_vector(resize(signed(ins(7 downto 0)), Immediate'length));
                 when "100"=>
                     ALUOp<=ALUOp_ADD;
@@ -196,8 +197,14 @@ begin
                     RegWrite<='1';
                     ReadReg1<=("0"&ins(7 downto 5));
                     WriteReg<=REG_SP;
-                    Immediate<="0000000000000000";
+                    Immediate<=(others<='0');
                 when others=>
+                    ALUOp<=ALUOp_DEFAULT;
+                    ALUSrc<=ALUSrc_DEFAULT;
+                    RegWrite<='0';
+                    ReadReg1<=(others<='0');
+                    WriteReg<=(others<='0');
+                    Immediate<=(others<='0');
             end case;
         when "01101"=>
             ALUOp<=ALUOp_ADD;
@@ -209,7 +216,7 @@ begin
             MemToReg<='0';
             PCJump<='0';
             ReadReg1<=REG_ZERO;
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             WriteReg<=("0"&ins(10 downto 8));
             Immediate<=("00000000"&ins(7 downto 0));
         when "01111"=>
@@ -222,9 +229,9 @@ begin
             MemToReg<='0';
             PCJump<='0';
             ReadReg1<=("0"&ins(7 downto 5));
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             WriteReg<=("0"&ins(10 downto 8));
-            Immediate<="0000000000000000";
+            Immediate<=(others<='0');
         when "10010"=>
             ALUOp<=ALUOp_ADD;
             ALUSrc<=ALUSrc_IMMEDIATE;
@@ -235,7 +242,7 @@ begin
             MemToReg<='1';
             PCJump<='0';
             ReadReg1<=REG_SP;
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             WriteReg<=("0"&ins(10 downto 8));
             Immediate<=std_logic_vector(resize(signed(ins(7 downto 0)), Immediate'length));
         when "10011"=>
@@ -248,7 +255,7 @@ begin
             MemToReg<='1';
             PCJump<='0';
             ReadReg1<=("0"&ins(10 downto 8));
-            ReadReg2<="0000";
+            ReadReg2<=(others<='0');
             WriteReg<=("0"&ins(7 downto 5));
             Immediate<=std_logic_vector(resize(signed(ins(4 downto 0)), Immediate'length));
         when "11010"=>
@@ -262,7 +269,7 @@ begin
             PCJump<='0';
             ReadReg1<=REG_SP;
             ReadReg2<=("0"&ins(10 downto 8));
-            WriteReg<="0000";
+            WriteReg<=(others<='0');
             Immediate<=std_logic_vector(resize(signed(ins(7 downto 0)), Immediate'length));
          when "11011"=>
             ALUOp<=ALUOp_ADD;
@@ -275,13 +282,13 @@ begin
             PCJump<='0';
             ReadReg1<=("0"&ins(10 downto 8));
             ReadReg2<=("0"&ins(7 downto 5));
-            WriteReg<="0000";
+            WriteReg<=(others<='0');
             Immediate<=std_logic_vector(resize(signed(ins(4 downto 0)), Immediate'length));
         when "11100"=>
             case ins(1) is
                 when '0'=>ALUOp<=ALUOp_ADD;
                 when '1'=>ALUOp<=ALUOp_SUB;
-                when others=>
+                when others=>ALUOp<=ALUOp_DEFAULT;
             end case;
             ALUSrc<=ALUSrc_REG;
             MemRead<='0';
@@ -293,7 +300,7 @@ begin
             ReadReg1<=("0"&ins(10 downto 8));
             ReadReg2<=("0"&ins(7 downto 5));
             WriteReg<=("0"&ins(4 downto 2));
-            Immediate<="0000000000000000";
+            Immediate<=(others<='0');
         when "11110"=>
             ALUOp<=ALUOp_ADD;
             ALUSrc<=ALUSrc_IMMEDIATE;
@@ -303,8 +310,8 @@ begin
             RegWrite<='1';
             MemToReg<='0';
             PCJump<='0';
-            ReadReg2<="0000";
-            Immediate<="0000000000000000";
+            ReadReg2<=(others<='0');
+            Immediate<=(others<='0');
             case ins(0) is
                 when '0'=>
                     ReadReg1<=REG_IH;
@@ -313,31 +320,38 @@ begin
                     ReadReg1<=("0"&ins(10 downto 8));
                     WriteReg<=REG_IH;
                 when others=>
+                    ReadReg1<=(others<='0');
+                    WriteReg<=(others<='0');
             end case;
         when "11101"=>
             MemRead<='0';
             MemWrite<='0';
             MemToReg<='0';
-            Immediate<="0000000000000000";
+            Immediate<=(others<='0');
             case ins(3 downto 0) is
                 when "0000"=>
                     ALUOp<=ALUOp_ADD;
                     ALUSrc<=ALUSrc_IMMEDIATE;
-                    ReadReg2<="0000";
+                    ReadReg2<=(others<='0');
                     case ins(6) is
                         when '0'=>
                             PCToReg<='0';
                             RegWrite<='0';
                             PCJump<='1';
                             ReadReg1<=("0"&ins(10 downto 8));
-                            WriteReg<="0000";
+                            WriteReg<=(others<='0');
                         when '1'=>
                             PCToReg<='1';
                             RegWrite<='1';
                             PCJump<='0';
-                            ReadReg1<="0000";
+                            ReadReg1<=(others<='0');
                             WriteReg<=("0"&ins(10 downto 8));
                         when others=>
+                            PCToReg<='0';
+                            RegWrite<='0';
+                            PCJump<='0';
+                            ReadReg1<=(others<='0');
+                            WriteReg<=(others<='0');
                     end case;
                 when "1100"=>
                     ALUOp<=ALUOp_AND;
@@ -394,8 +408,28 @@ begin
                     ReadReg2<=("0"&ins(7 downto 5));
                     WriteReg<=REG_T;
                 when others=>
+                    ALUOp<=ALUOp_DEFAULT;
+                    ALUSrc<=ALUSrc_DEFAULT;
+                    PCToReg<='0';
+                    RegWrite<='0';
+                    PCJump<='0';
+                    ReadReg1<=(others<='0');
+                    ReadReg2<=(others<='0');
+                    WriteReg<=(others<='0');
             end case;
         when others=>
+            ALUOp<=ALUOp_DEFAULT;
+            ALUSrc<=ALUSrc_DEFAULT;
+            MemRead<='0';
+            MemWrite<='0';
+            PCToReg<='0';
+            RegWrite<='0';
+            MemToReg<='0';
+            PCJump<='0';
+            ReadReg1<=(others<='0');
+            ReadReg2<=(others<='0');
+            WriteReg<=(others<='0');
+            Immediate<=(others<='0');
     end case;
 
 end process;

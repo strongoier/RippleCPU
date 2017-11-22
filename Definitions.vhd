@@ -33,6 +33,7 @@ package Definitions is
     constant REG_SP           : std_logic_vector(3 downto 0) := "1000";
     constant REG_T            : std_logic_vector(3 downto 0) := "1001";
     constant REG_IH           : std_logic_vector(3 downto 0) := "1010";
+    constant ALUOp_DEFAULT    : std_logic_vector(3 downto 0) := "0001";
     constant ALUOp_ADD        : std_logic_vector(3 downto 0) := "0001";
     constant ALUOp_AND        : std_logic_vector(3 downto 0) := "0010";
     constant ALUOp_BNOP       : std_logic_vector(3 downto 0) := "0011";
