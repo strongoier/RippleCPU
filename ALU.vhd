@@ -104,6 +104,8 @@ begin
                 ALUResult<=(others=>'0');
             end if;
         when others=>
+            Branch<='0';
+            ALUResult<=(others=>'0');
     end case;
 end process;
 end Behavioral;
