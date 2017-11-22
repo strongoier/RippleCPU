@@ -9,7 +9,7 @@ entity Reg is
         Flush: in std_logic;
         WriteEnable: in std_logic;
         DataIn: in std_logic;
-        DataOut: out std_logic
+        DataOut: out std_logic := '0'
     );
 end Reg;
 

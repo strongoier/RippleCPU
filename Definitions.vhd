@@ -29,6 +29,8 @@ package Definitions is
 -- procedure <procedure_name> (<type_declaration> <constant_name>	: in <type_declaration>);
 --
 
+    type RegisterArrayType is array(15 downto 0) of std_logic_vector(15 downto 0);
+
     constant REG_ZERO         : std_logic_vector(3 downto 0) := "1111";
     constant REG_SP           : std_logic_vector(3 downto 0) := "1000";
     constant REG_T            : std_logic_vector(3 downto 0) := "1001";

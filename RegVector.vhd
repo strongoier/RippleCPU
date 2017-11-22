@@ -13,7 +13,7 @@ entity RegVector is
         WriteEnable: in std_logic;
         DataInitial: in std_logic_vector(Size - 1 downto 0);
         DataIn: in std_logic_vector(Size - 1 downto 0);
-        DataOut: out std_logic_vector(Size - 1 downto 0)
+        DataOut: out std_logic_vector(Size - 1 downto 0) := (others => '0')
     );
 end RegVector;
 

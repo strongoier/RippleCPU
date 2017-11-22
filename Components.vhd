@@ -9,6 +9,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use work.Definitions.all;
 
 package Components is
 
@@ -50,6 +51,15 @@ package Components is
             DataOut: out std_logic_vector(Size - 1 downto 0)
         );
     end component;
+    component FakeMemory is
+        port (
+            MemRead: in std_logic;
+            MemWrite: in std_logic;
+            Address: in std_logic_vector(15 downto 0);
+            WriteData: in std_logic_vector(15 downto 0);
+            ReadData: out std_logic_vector(15 downto 0)
+        );
+    end component;
     component Decoder is
         port (
             ins       : in  STD_LOGIC_VECTOR (15 downto 0);
@@ -76,7 +86,8 @@ package Components is
             WriteRegister: in std_logic_vector(3 downto 0);
             WriteData: in std_logic_vector(15 downto 0);
             ReadData1: out std_logic_vector(15 downto 0);
-            ReadData2: out std_logic_vector(15 downto 0)
+            ReadData2: out std_logic_vector(15 downto 0);
+            outTemp: out RegisterArrayType
         );
     end component;
     component ALU is
