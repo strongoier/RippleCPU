@@ -36,6 +36,7 @@ architecture Behavioral of RippleCPU is
     signal PC: std_logic_vector(15 downto 0);
     signal PCDataIn: std_logic_vector(15 downto 0);
     -- IF
+    signal IF_PC: std_logic_vector(15 downto 0);
     signal IF_Instruction: std_logic_vector(15 downto 0);
     -- IF2ID
     signal IF2ID_Flush: std_logic;
@@ -131,8 +132,9 @@ begin
                 PC + 1;
     cPC: RegVector generic map(16) port map(Clk, '0', PCWrite, ZERO_16, PCDataIn, PC);
     -- IF
+    IF_PC <= PC + 1;
     cInstructionMemory: FakeMemory port map('1', '0', PC, ZERO_16, IF_Instruction);
-    cIF2ID_PC: RegVector generic map(16) port map(Clk, IF2ID_Flush, IF2ID_Write, ZERO_16, PC, IF2ID_PC);
+    cIF2ID_PC: RegVector generic map(16) port map(Clk, IF2ID_Flush, IF2ID_Write, ZERO_16, IF_PC, IF2ID_PC);
     cIF2ID_Instruction: RegVector generic map(16) port map(Clk, IF2ID_Flush, IF2ID_Write, INSTRUCTION_NOP, IF_Instruction, IF2ID_Instruction);
     -- ID
     cDecoder: Decoder port map(IF2ID_Instruction, ID_ALUOp, ID_ALUSrc, ID_MemRead, ID_MemWrite, ID_PCToReg, ID_RegWrite, ID_MemToReg, ID_PCJump, ID_ReadRegister1, ID_ReadRegister2, ID_WriteRegister, ID_ExtendedImmediate);

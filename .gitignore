@@ -80,3 +80,4 @@ xilinxsim.ini
 # other files
 .DS_Store
 ~$*
+*.wcfg
