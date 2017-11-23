@@ -35,20 +35,31 @@ package Components is
             Flush: in std_logic;
             WriteEnable: in std_logic;
             DataIn: in std_logic;
-            DataOut: out std_logic
+            DataOut: out std_logic := '0'
         );
     end component;
-    component RegVector
+    component RegVector4 is
         generic (
-            Size: integer := 16
+            DataInitial: std_logic_vector(3 downto 0)
         );
         port (
             Clk: in std_logic;
             Flush: in std_logic;
             WriteEnable: in std_logic;
-            DataInitial: in std_logic_vector(Size - 1 downto 0);
-            DataIn: in std_logic_vector(Size - 1 downto 0);
-            DataOut: out std_logic_vector(Size - 1 downto 0)
+            DataIn: in std_logic_vector(3 downto 0);
+            DataOut: out std_logic_vector(3 downto 0) := DataInitial
+        );
+    end component;
+    component RegVector16 is
+        generic (
+            DataInitial: std_logic_vector(15 downto 0)
+        );
+        port (
+            Clk: in std_logic;
+            Flush: in std_logic;
+            WriteEnable: in std_logic;
+            DataIn: in std_logic_vector(15 downto 0);
+            DataOut: out std_logic_vector(15 downto 0) := DataInitial
         );
     end component;
     component FakeMemory is
@@ -58,6 +69,21 @@ package Components is
             Address: in std_logic_vector(15 downto 0);
             WriteData: in std_logic_vector(15 downto 0);
             ReadData: out std_logic_vector(15 downto 0)
+        );
+    end component;
+    component Memory is
+        port (
+            Clk: in std_logic;
+            MemRead: in std_logic;
+            MemWrite: in std_logic;
+            Address: in std_logic_vector(15 downto 0);
+            WriteData: in std_logic_vector(15 downto 0);
+            ReadData: out std_logic_vector(15 downto 0);
+            OE: out std_logic;
+            WE: out std_logic;
+            EN: out std_logic;
+            RamAddr: out std_logic_vector(17 downto 0);
+            RamData: inout std_logic_vector(15 downto 0)
         );
     end component;
     component Decoder is
@@ -97,29 +123,6 @@ package Components is
             ALUOp : in  STD_LOGIC_VECTOR (3 downto 0);
             ALUResult : out  STD_LOGIC_VECTOR (15 downto 0);
             Branch : out  STD_LOGIC
-        );
-    end component;
-    component Forwarding
-        port (
-            ID2EX_ReadRegister1: in std_logic_vector(3 downto 0);
-            ID2EX_ReadRegister2: in std_logic_vector(3 downto 0);
-            EX2MEM_RegWrite: in std_logic;
-            EX2MEM_WriteRegister: in std_logic_vector(3 downto 0);
-            MEM2WB_RegWrite: in std_logic;
-            MEM2WB_WriteRegister: in std_logic_vector(3 downto 0);
-            Forward1: out std_logic_vector(1 downto 0);
-            Forward2: out std_logic_vector(1 downto 0)
-        );
-    end component;
-    component HazardDetection
-        port (
-            ID_ReadRegister1: in std_logic_vector(3 downto 0);
-            ID_ReadRegister2: in std_logic_vector(3 downto 0);
-            ID2EX_MemRead: in std_logic;
-            ID2EX_WriteRegister: in std_logic_vector(3 downto 0);
-            PCWrite: out std_logic;
-            IF2ID_Write: out std_logic;
-            ID2EX_Flush: out std_logic
         );
     end component;
 

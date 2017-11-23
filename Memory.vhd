@@ -5,34 +5,28 @@ use ieee.std_logic_arith.all;
 
 entity Memory is
     port (
-        OE: in std_logic;
-        WE: in std_logic;
-        RamAddr: out std_logic_vector(17 downto 0);
-        RamData: inout std_logic_vector(15 downto 0);
+        Clk: in std_logic;
+        MemRead: in std_logic;
         MemWrite: in std_logic;
         Address: in std_logic_vector(15 downto 0);
         WriteData: in std_logic_vector(15 downto 0);
-        ReadData: out std_logic_vector(15 downto 0)
+        ReadData: out std_logic_vector(15 downto 0);
+        OE: out std_logic;
+        WE: out std_logic;
+        EN: out std_logic;
+        RamAddr: out std_logic_vector(17 downto 0);
+        RamData: inout std_logic_vector(15 downto 0)
     );
 end Memory;
 
 architecture Behavioral of Memory is
 
 begin
+    OE <= Clk or (not MemRead);
+    WE <= Clk or (not MemWrite);
+    EN <= '0';
     RamAddr <= "00" & Address;
     ReadData <= RamData;
-
-    process (OE)
-    begin
-        if rising_edge(OE) and MemWrite = '0' then
-            RamData <= (others => 'Z');
-        end if;
-    end process;
-
-    process (WE)
-    begin
-        if rising_edge(WE) and MemWrite = '1' then
-            RamData <= WriteData;
-        end if;
-    end process;
+    RamData <= WriteData when MemWrite = '1' else
+               (others => 'Z');
 end Behavioral;

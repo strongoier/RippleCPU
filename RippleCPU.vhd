@@ -8,6 +8,17 @@ use work.Components.all;
 entity RippleCPU is
     port (
         Clk: in std_logic;
+        Rst: in std_logic;
+--        Ram1OE: out std_logic;
+--        Ram1WE: out std_logic;
+--        Ram1EN: out std_logic;
+--        Ram1Addr: out std_logic_vector(17 downto 0);
+--        Ram1Data: inout std_logic_vector(15 downto 0);
+--        Ram2OE: out std_logic;
+--        Ram2WE: out std_logic;
+--        Ram2EN: out std_logic;
+--        Ram2Addr: out std_logic_vector(17 downto 0);
+--        Ram2Data: inout std_logic_vector(15 downto 0);
         outPC: out std_logic_vector(15 downto 0);
         outTemp0: out std_logic_vector(15 downto 0);
         outTemp1: out std_logic_vector(15 downto 0);
@@ -31,6 +42,8 @@ end RippleCPU;
 architecture Behavioral of RippleCPU is
     --test
     signal outTemp: RegisterArrayType;
+    -- Global
+    signal Global_Flush: std_logic;
     -- PC
     signal PCWrite: std_logic;
     signal PC: std_logic_vector(15 downto 0);
@@ -130,12 +143,13 @@ begin
     PCDataIn <= EX_Forward1Result when ID2EX_PCJump = '1' else
                 ID2EX_PC + ID2EX_ExtendedImmediate when EX_PCBranch = '1' else
                 PC + 1;
-    cPC: RegVector generic map(16) port map(Clk, '0', PCWrite, ZERO_16, PCDataIn, PC);
+    cPC: RegVector16 generic map(PC_INITIAL) port map(Clk, Global_Flush, PCWrite, PCDataIn, PC);
     -- IF
     IF_PC <= PC + 1;
     cInstructionMemory: FakeMemory port map('1', '0', PC, ZERO_16, IF_Instruction);
-    cIF2ID_PC: RegVector generic map(16) port map(Clk, IF2ID_Flush, IF2ID_Write, ZERO_16, IF_PC, IF2ID_PC);
-    cIF2ID_Instruction: RegVector generic map(16) port map(Clk, IF2ID_Flush, IF2ID_Write, INSTRUCTION_NOP, IF_Instruction, IF2ID_Instruction);
+    --cInstructionMemory: Memory port map(Clk, '1', '0', PC, ZERO_16, IF_Instruction, Ram1OE, Ram1WE, Ram1EN, Ram1Addr, Ram1Data);
+    cIF2ID_PC: RegVector16 generic map(PC_INITIAL) port map(Clk, IF2ID_Flush, IF2ID_Write, IF_PC, IF2ID_PC);
+    cIF2ID_Instruction: RegVector16 generic map(INSTRUCTION_NOP) port map(Clk, IF2ID_Flush, IF2ID_Write, IF_Instruction, IF2ID_Instruction);
     -- ID
     cDecoder: Decoder port map(IF2ID_Instruction, ID_ALUOp, ID_ALUSrc, ID_MemRead, ID_MemWrite, ID_PCToReg, ID_RegWrite, ID_MemToReg, ID_PCJump, ID_ReadRegister1, ID_ReadRegister2, ID_WriteRegister, ID_ExtendedImmediate);
     cRegisters: Registers port map(Clk, MEM2WB_RegWrite, ID_ReadRegister1, ID_ReadRegister2, MEM2WB_WriteRegister, WB_WriteDataToReg, ID_ReadData1, ID_ReadData2, outTemp);
@@ -146,14 +160,14 @@ begin
     cID2EX_PCToReg: Reg port map(Clk, ID2EX_Flush, '1', ID_PCToReg, ID2EX_PCToReg);
     cID2EX_PCJump: Reg port map(Clk, ID2EX_Flush, '1', ID_PCJump, ID2EX_PCJump);
     cID2EX_ALUSrc: Reg port map(Clk, ID2EX_Flush, '1', ID_ALUSrc, ID2EX_ALUSrc);
-    cID2EX_ALUOp: RegVector generic map(4) port map(Clk, ID2EX_Flush, '1', ALUOp_ADD, ID_ALUOp, ID2EX_ALUOp);
-    cID2EX_ReadData1: RegVector generic map(16) port map(Clk, ID2EX_Flush, '1', ZERO_16, ID_ReadData1, ID2EX_ReadData1);
-    cID2EX_ReadData2: RegVector generic map(16) port map(Clk, ID2EX_Flush, '1', ZERO_16, ID_ReadData2, ID2EX_ReadData2);
-    cID2EX_PC: RegVector generic map(16) port map(Clk, ID2EX_Flush, '1', ZERO_16, IF2ID_PC, ID2EX_PC);
-    cID2EX_ExtendedImmediate: RegVector generic map(16) port map(Clk, ID2EX_Flush, '1', ZERO_16, ID_ExtendedImmediate, ID2EX_ExtendedImmediate);
-    cID2EX_ReadRegister1: RegVector generic map(4) port map(Clk, ID2EX_Flush, '1', ZERO_4, ID_ReadRegister1, ID2EX_ReadRegister1);
-    cID2EX_ReadRegister2: RegVector generic map(4) port map(Clk, ID2EX_Flush, '1', ZERO_4, ID_ReadRegister2, ID2EX_ReadRegister2);
-    cID2EX_WriteRegister: RegVector generic map(4) port map(Clk, ID2EX_Flush, '1', ZERO_4, ID_WriteRegister, ID2EX_WriteRegister);
+    cID2EX_ALUOp: RegVector4 generic map(ALUOp_DEFAULT) port map(Clk, ID2EX_Flush, '1', ID_ALUOp, ID2EX_ALUOp);
+    cID2EX_ReadData1: RegVector16 generic map(ZERO_16) port map(Clk, ID2EX_Flush, '1', ID_ReadData1, ID2EX_ReadData1);
+    cID2EX_ReadData2: RegVector16 generic map(ZERO_16) port map(Clk, ID2EX_Flush, '1', ID_ReadData2, ID2EX_ReadData2);
+    cID2EX_PC: RegVector16 generic map(PC_INITIAL) port map(Clk, ID2EX_Flush, '1', IF2ID_PC, ID2EX_PC);
+    cID2EX_ExtendedImmediate: RegVector16 generic map(ZERO_16) port map(Clk, ID2EX_Flush, '1', ID_ExtendedImmediate, ID2EX_ExtendedImmediate);
+    cID2EX_ReadRegister1: RegVector4 generic map(REG_ZERO) port map(Clk, ID2EX_Flush, '1', ID_ReadRegister1, ID2EX_ReadRegister1);
+    cID2EX_ReadRegister2: RegVector4 generic map(REG_ZERO) port map(Clk, ID2EX_Flush, '1', ID_ReadRegister2, ID2EX_ReadRegister2);
+    cID2EX_WriteRegister: RegVector4 generic map(REG_ZERO) port map(Clk, ID2EX_Flush, '1', ID_WriteRegister, ID2EX_WriteRegister);
     -- EX
     EX_Forward1Result <= EX2MEM_ALUResult when Forward1 = FORWARD_EX2MEM else
                          WB_WriteDataToReg when Forward1 = FORWARD_MEM2WB else
@@ -163,29 +177,47 @@ begin
                          ID2EX_ReadData2;
     EX_ALUDataIn2 <= ID2EX_ExtendedImmediate when ID2EX_ALUSrc = ALUSrc_Immediate else EX_Forward2Result;
     cALU: ALU port map(EX_Forward1Result, EX_ALUDataIn2, ID2EX_ALUOp, EX_ALUResult, EX_PCBranch);
-    cEX2MEM_RegWrite: Reg port map(Clk, '0', '1', ID2EX_RegWrite, EX2MEM_RegWrite);
-    cEX2MEM_MemToReg: Reg port map(Clk, '0', '1', ID2EX_MemToReg, EX2MEM_MemToReg);
-    cEX2MEM_MemRead: Reg port map(Clk, '0', '1', ID2EX_MemRead, EX2MEM_MemRead);
-    cEX2MEM_MemWrite: Reg port map(Clk, '0', '1', ID2EX_MemWrite, EX2MEM_MemWrite);
-    cEX2MEM_PCToReg: Reg port map(Clk, '0', '1', ID2EX_PCToReg, EX2MEM_PCToReg);
-    cEX2MEM_ALUResult: RegVector generic map(16) port map(Clk, '0', '1', ZERO_16, EX_ALUResult, EX2MEM_ALUResult);
-    cEX2MEM_Forward2Result: RegVector generic map(16) port map(Clk, '0', '1', ZERO_16, EX_Forward2Result, EX2MEM_Forward2Result);
-    cEX2MEM_PC: RegVector generic map(16) port map(Clk, '0', '1', ZERO_16, ID2EX_PC, EX2MEM_PC);
-    cEX2MEM_WriteRegister: RegVector generic map(4) port map(Clk, '0', '1', ZERO_4, ID2EX_WriteRegister, EX2MEM_WriteRegister);
+    cEX2MEM_RegWrite: Reg port map(Clk, Global_Flush, '1', ID2EX_RegWrite, EX2MEM_RegWrite);
+    cEX2MEM_MemToReg: Reg port map(Clk, Global_Flush, '1', ID2EX_MemToReg, EX2MEM_MemToReg);
+    cEX2MEM_MemRead: Reg port map(Clk, Global_Flush, '1', ID2EX_MemRead, EX2MEM_MemRead);
+    cEX2MEM_MemWrite: Reg port map(Clk, Global_Flush, '1', ID2EX_MemWrite, EX2MEM_MemWrite);
+    cEX2MEM_PCToReg: Reg port map(Clk, Global_Flush, '1', ID2EX_PCToReg, EX2MEM_PCToReg);
+    cEX2MEM_ALUResult: RegVector16 generic map(ZERO_16) port map(Clk, Global_Flush, '1', EX_ALUResult, EX2MEM_ALUResult);
+    cEX2MEM_Forward2Result: RegVector16 generic map(ZERO_16) port map(Clk, Global_Flush, '1', EX_Forward2Result, EX2MEM_Forward2Result);
+    cEX2MEM_PC: RegVector16 generic map(PC_INITIAL) port map(Clk, Global_Flush, '1', ID2EX_PC, EX2MEM_PC);
+    cEX2MEM_WriteRegister: RegVector4 generic map(REG_ZERO) port map(Clk, Global_Flush, '1', ID2EX_WriteRegister, EX2MEM_WriteRegister);
     -- MEM
     MEM_WriteDataToReg <= EX2MEM_PC when EX2MEM_PCToReg = '1' else EX2MEM_ALUResult;
     cDataMemory: FakeMemory port map(EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_ALUResult, EX2MEM_Forward2Result, MEM_ReadDataFromMem);
-    cMEM2WB_RegWrite: Reg port map(Clk, '0', '1', EX2MEM_RegWrite, MEM2WB_RegWrite);
-    cMEM2WB_MemToReg: Reg port map(Clk, '0', '1', EX2MEM_MemToReg, MEM2WB_MemToReg);
-    cMEM2WB_ReadDataFromMem: RegVector generic map(16) port map(Clk, '0', '1', ZERO_16, MEM_ReadDataFromMem, MEM2WB_ReadDataFromMem);
-    cMEM2WB_WriteDataToReg: RegVector generic map(16) port map(Clk, '0', '1', ZERO_16, MEM_WriteDataToReg, MEM2WB_WriteDataToReg);
-    cMEM2WB_WriteRegister: RegVector generic map(4) port map(Clk, '0', '1', ZERO_4, EX2MEM_WriteRegister, MEM2WB_WriteRegister);
+    --cDataMemory: Memory port map(Clk, EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_ALUResult, EX2MEM_Forward2Result, MEM_ReadDataFromMem, Ram2OE, Ram2WE, Ram2EN, Ram2Addr, Ram2Data);
+    cMEM2WB_RegWrite: Reg port map(Clk, Global_Flush, '1', EX2MEM_RegWrite, MEM2WB_RegWrite);
+    cMEM2WB_MemToReg: Reg port map(Clk, Global_Flush, '1', EX2MEM_MemToReg, MEM2WB_MemToReg);
+    cMEM2WB_ReadDataFromMem: RegVector16 generic map(ZERO_16) port map(Clk, Global_Flush, '1', MEM_ReadDataFromMem, MEM2WB_ReadDataFromMem);
+    cMEM2WB_WriteDataToReg: RegVector16 generic map(ZERO_16) port map(Clk, Global_Flush, '1', MEM_WriteDataToReg, MEM2WB_WriteDataToReg);
+    cMEM2WB_WriteRegister: RegVector4 generic map(REG_ZERO) port map(Clk, Global_Flush, '1', EX2MEM_WriteRegister, MEM2WB_WriteRegister);
     -- WB
     WB_WriteDataToReg <= MEM2WB_ReadDataFromMem when MEM2WB_MemToReg = '1' else
                          MEM2WB_WriteDataToReg;
-    -- Forwarding & HazardDetection (Data)
-    cForwarding: Forwarding port map(ID2EX_ReadRegister1, ID2EX_ReadRegister2, EX2MEM_RegWrite, EX2MEM_WriteRegister, MEM2WB_RegWrite, MEM2WB_WriteRegister, Forward1, Forward2);
-    cHazardDetection: HazardDetection port map(ID_ReadRegister1, ID_ReadRegister2, ID2EX_MemRead, ID2EX_WriteRegister, PCWrite, IF2ID_Write, ID2EX_Flush);
+    -- Forwarding (Data)
+    Forward1 <= FORWARD_EX2MEM when (EX2MEM_RegWrite = '1' and EX2MEM_WriteRegister = ID2EX_ReadRegister1) else
+                FORWARD_MEM2WB when (MEM2WB_RegWrite = '1' and MEM2WB_WriteRegister = ID2EX_ReadRegister1) else
+                FORWARD_ID2EX;
+    Forward2 <= FORWARD_EX2MEM when (EX2MEM_RegWrite = '1' and EX2MEM_WriteRegister = ID2EX_ReadRegister2) else
+                FORWARD_MEM2WB when (MEM2WB_RegWrite = '1' and MEM2WB_WriteRegister = ID2EX_ReadRegister2) else
+                FORWARD_ID2EX;
+    -- HazardDetection (Data)
+    PCWrite <= '0' when (ID2EX_MemRead = '1' and (ID2EX_WriteRegister = ID_ReadRegister1 or ID2EX_WriteRegister = ID_ReadRegister2)) else '1';
+    IF2ID_Write <= '0' when (ID2EX_MemRead = '1' and (ID2EX_WriteRegister = ID_ReadRegister1 or ID2EX_WriteRegister = ID_ReadRegister2)) else '1';
+    ID2EX_Flush <= '1' when (ID2EX_MemRead = '1' and (ID2EX_WriteRegister = ID_ReadRegister1 or ID2EX_WriteRegister = ID_ReadRegister2)) else Global_Flush;
     -- HazardDetection (Control)
-    IF2ID_Flush <= ID2EX_PCJump or EX_PCBranch;
+    IF2ID_Flush <= ID2EX_PCJump or EX_PCBranch or Global_Flush;
+    -- Asynchronized Reset -> Synchronized Flush
+    process (Clk, Rst)
+    begin
+        if Rst = '0' then
+            Global_Flush <= '1';
+        elsif rising_edge(Clk) then
+            Global_Flush <= '0';
+        end if;
+    end process;
 end Behavioral;

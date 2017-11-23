@@ -55,8 +55,9 @@ package Definitions is
     constant FORWARD_EX2MEM   : std_logic_vector(1 downto 0) := "01";
     constant FORWARD_MEM2WB   : std_logic_vector(1 downto 0) := "10";
     constant INSTRUCTION_NOP  : std_logic_vector(15 downto 0) := "0000100000000000";
+    constant PC_INITIAL       : std_logic_vector(15 downto 0) := "0000000000000000";
     constant ZERO_16          : std_logic_vector(15 downto 0) := "0000000000000000";
-    constant ZERO_4           : std_logic_vector(3 downto 0) := "0000";
+    --constant ZERO_4           : std_logic_vector(3 downto 0) := "0000";
 end Definitions;
 
 package body Definitions is

@@ -2,7 +2,7 @@
 -- Company: 
 -- Engineer:
 --
--- Create Date:   12:58:46 11/22/2017
+-- Create Date:   12:21:02 11/23/2017
 -- Design Name:   
 -- Module Name:   C:/ise/RippleCPU/TestRippleCPU.vhd
 -- Project Name:  RippleCPU
@@ -42,6 +42,7 @@ ARCHITECTURE behavior OF TestRippleCPU IS
     COMPONENT RippleCPU
     PORT(
          Clk : IN  std_logic;
+         Rst : IN  std_logic;
          outPC : OUT  std_logic_vector(15 downto 0);
          outTemp0 : OUT  std_logic_vector(15 downto 0);
          outTemp1 : OUT  std_logic_vector(15 downto 0);
@@ -65,6 +66,7 @@ ARCHITECTURE behavior OF TestRippleCPU IS
 
    --Inputs
    signal Clk : std_logic := '0';
+   signal Rst : std_logic := '1';
 
  	--Outputs
    signal outPC : std_logic_vector(15 downto 0);
@@ -93,6 +95,7 @@ BEGIN
 	-- Instantiate the Unit Under Test (UUT)
    uut: RippleCPU PORT MAP (
           Clk => Clk,
+          Rst => Rst,
           outPC => outPC,
           outTemp0 => outTemp0,
           outTemp1 => outTemp1,
@@ -126,9 +129,12 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-      --wait for 100 ns;	
+      wait for 120 ns;	
+      Rst <= '0';
+      wait for 5 ns;
+      Rst <= '1';
 
-      --wait for Clk_period*10;
+      wait for Clk_period*10;
 
       -- insert stimulus here 
 

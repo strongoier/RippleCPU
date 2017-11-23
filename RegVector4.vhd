@@ -3,21 +3,20 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
 
-entity RegVector is
+entity RegVector4 is
     generic (
-        Size: integer := 16
+        DataInitial: std_logic_vector(3 downto 0)
     );
     port (
         Clk: in std_logic;
         Flush: in std_logic;
         WriteEnable: in std_logic;
-        DataInitial: in std_logic_vector(Size - 1 downto 0);
-        DataIn: in std_logic_vector(Size - 1 downto 0);
-        DataOut: out std_logic_vector(Size - 1 downto 0) := (others => '0')
+        DataIn: in std_logic_vector(3 downto 0);
+        DataOut: out std_logic_vector(3 downto 0) := DataInitial
     );
-end RegVector;
+end RegVector4;
 
-architecture Behavioral of RegVector is
+architecture Behavioral of RegVector4 is
 
 begin
     process (Clk)
