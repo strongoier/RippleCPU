@@ -9,33 +9,36 @@ entity RippleCPU is
     port (
         Clk: in std_logic;
         Rst: in std_logic;
---        Ram1OE: out std_logic;
---        Ram1WE: out std_logic;
---        Ram1EN: out std_logic;
---        Ram1Addr: out std_logic_vector(17 downto 0);
---        Ram1Data: inout std_logic_vector(15 downto 0);
---        Ram2OE: out std_logic;
---        Ram2WE: out std_logic;
---        Ram2EN: out std_logic;
---        Ram2Addr: out std_logic_vector(17 downto 0);
---        Ram2Data: inout std_logic_vector(15 downto 0);
-        outPC: out std_logic_vector(15 downto 0);
-        outTemp0: out std_logic_vector(15 downto 0);
-        outTemp1: out std_logic_vector(15 downto 0);
-        outTemp2: out std_logic_vector(15 downto 0);
-        outTemp3: out std_logic_vector(15 downto 0);
-        outTemp4: out std_logic_vector(15 downto 0);
-        outTemp5: out std_logic_vector(15 downto 0);
-        outTemp6: out std_logic_vector(15 downto 0);
-        outTemp7: out std_logic_vector(15 downto 0);
-        outTemp8: out std_logic_vector(15 downto 0);
-        outTemp9: out std_logic_vector(15 downto 0);
-        outTemp10: out std_logic_vector(15 downto 0);
-        outTemp11: out std_logic_vector(15 downto 0);
-        outTemp12: out std_logic_vector(15 downto 0);
-        outTemp13: out std_logic_vector(15 downto 0);
-        outTemp14: out std_logic_vector(15 downto 0);
-        outTemp15: out std_logic_vector(15 downto 0)
+        WRN: out std_logic;
+        RDN: out std_logic;
+        Ram1OE: out std_logic;
+        Ram1WE: out std_logic;
+        Ram1EN: out std_logic;
+        Ram1Addr: out std_logic_vector(17 downto 0);
+        Ram1Data: inout std_logic_vector(15 downto 0);
+        Ram2OE: out std_logic;
+        Ram2WE: out std_logic;
+        Ram2EN: out std_logic;
+        Ram2Addr: out std_logic_vector(17 downto 0);
+        Ram2Data: inout std_logic_vector(15 downto 0);
+        DYP0: out std_logic_vector(6 downto 0);
+        L: out std_logic_vector(15 downto 0)
+--        outTemp0: out std_logic_vector(15 downto 0);
+--        outTemp1: out std_logic_vector(15 downto 0);
+--        outTemp2: out std_logic_vector(15 downto 0);
+--        outTemp3: out std_logic_vector(15 downto 0);
+--        outTemp4: out std_logic_vector(15 downto 0);
+--        outTemp5: out std_logic_vector(15 downto 0);
+--        outTemp6: out std_logic_vector(15 downto 0);
+--        outTemp7: out std_logic_vector(15 downto 0);
+--        outTemp8: out std_logic_vector(15 downto 0);
+--        outTemp9: out std_logic_vector(15 downto 0);
+--        outTemp10: out std_logic_vector(15 downto 0);
+--        outTemp11: out std_logic_vector(15 downto 0);
+--        outTemp12: out std_logic_vector(15 downto 0);
+--        outTemp13: out std_logic_vector(15 downto 0);
+--        outTemp14: out std_logic_vector(15 downto 0);
+--        outTemp15: out std_logic_vector(15 downto 0)
     );
 end RippleCPU;
 
@@ -121,23 +124,26 @@ architecture Behavioral of RippleCPU is
 begin
 
     --test
-    outPC <= PC;
-    outTemp0 <= outTemp(0);
-    outTemp1 <= outTemp(1);
-    outTemp2 <= outTemp(2);
-    outTemp3 <= outTemp(3);
-    outTemp4 <= outTemp(4);
-    outTemp5 <= outTemp(5);
-    outTemp6 <= outTemp(6);
-    outTemp7 <= outTemp(7);
-    outTemp8 <= outTemp(8);
-    outTemp9 <= outTemp(9);
-    outTemp10 <= outTemp(10);
-    outTemp11 <= outTemp(11);
-    outTemp12 <= outTemp(12);
-    outTemp13 <= outTemp(13);
-    outTemp14 <= outTemp(14);
-    outTemp15 <= outTemp(15);
+    WRN <= '1';
+    RDN <= '1';
+    DYP0 <= (others => '0');
+    L <= PC;
+--    outTemp0 <= outTemp(0);
+--    outTemp1 <= outTemp(1);
+--    outTemp2 <= outTemp(2);
+--    outTemp3 <= outTemp(3);
+--    outTemp4 <= outTemp(4);
+--    outTemp5 <= outTemp(5);
+--    outTemp6 <= outTemp(6);
+--    outTemp7 <= outTemp(7);
+--    outTemp8 <= outTemp(8);
+--    outTemp9 <= outTemp(9);
+--    outTemp10 <= outTemp(10);
+--    outTemp11 <= outTemp(11);
+--    outTemp12 <= outTemp(12);
+--    outTemp13 <= outTemp(13);
+--    outTemp14 <= outTemp(14);
+--    outTemp15 <= outTemp(15);
 
     -- PC
     PCDataIn <= EX_Forward1Result when ID2EX_PCJump = '1' else
@@ -146,8 +152,8 @@ begin
     cPC: RegVector16 generic map(PC_INITIAL) port map(Clk, Global_Flush, PCWrite, PCDataIn, PC);
     -- IF
     IF_PC <= PC + 1;
-    cInstructionMemory: FakeMemory port map('1', '0', PC, ZERO_16, IF_Instruction);
-    --cInstructionMemory: Memory port map(Clk, '1', '0', PC, ZERO_16, IF_Instruction, Ram1OE, Ram1WE, Ram1EN, Ram1Addr, Ram1Data);
+    --cInstructionMemory: FakeMemory port map('1', '0', PC, ZERO_16, IF_Instruction);
+    cInstructionMemory: Memory port map(Clk, '1', '0', PC, ZERO_16, IF_Instruction, Ram1OE, Ram1WE, Ram1EN, Ram1Addr, Ram1Data);
     cIF2ID_PC: RegVector16 generic map(PC_INITIAL) port map(Clk, IF2ID_Flush, IF2ID_Write, IF_PC, IF2ID_PC);
     cIF2ID_Instruction: RegVector16 generic map(INSTRUCTION_NOP) port map(Clk, IF2ID_Flush, IF2ID_Write, IF_Instruction, IF2ID_Instruction);
     -- ID
@@ -188,8 +194,8 @@ begin
     cEX2MEM_WriteRegister: RegVector4 generic map(REG_ZERO) port map(Clk, Global_Flush, '1', ID2EX_WriteRegister, EX2MEM_WriteRegister);
     -- MEM
     MEM_WriteDataToReg <= EX2MEM_PC when EX2MEM_PCToReg = '1' else EX2MEM_ALUResult;
-    cDataMemory: FakeMemory port map(EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_ALUResult, EX2MEM_Forward2Result, MEM_ReadDataFromMem);
-    --cDataMemory: Memory port map(Clk, EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_ALUResult, EX2MEM_Forward2Result, MEM_ReadDataFromMem, Ram2OE, Ram2WE, Ram2EN, Ram2Addr, Ram2Data);
+    --cDataMemory: FakeMemory port map(EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_ALUResult, EX2MEM_Forward2Result, MEM_ReadDataFromMem);
+    cDataMemory: Memory port map(Clk, EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_ALUResult, EX2MEM_Forward2Result, MEM_ReadDataFromMem, Ram2OE, Ram2WE, Ram2EN, Ram2Addr, Ram2Data);
     cMEM2WB_RegWrite: Reg port map(Clk, Global_Flush, '1', EX2MEM_RegWrite, MEM2WB_RegWrite);
     cMEM2WB_MemToReg: Reg port map(Clk, Global_Flush, '1', EX2MEM_MemToReg, MEM2WB_MemToReg);
     cMEM2WB_ReadDataFromMem: RegVector16 generic map(ZERO_16) port map(Clk, Global_Flush, '1', MEM_ReadDataFromMem, MEM2WB_ReadDataFromMem);
