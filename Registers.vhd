@@ -13,15 +13,13 @@ entity Registers is
         WriteRegister: in std_logic_vector(3 downto 0);
         WriteData: in std_logic_vector(15 downto 0);
         ReadData1: out std_logic_vector(15 downto 0);
-        ReadData2: out std_logic_vector(15 downto 0);
-        outTemp: out RegisterArrayType
+        ReadData2: out std_logic_vector(15 downto 0)
     );
 end Registers;
 
 architecture Behavioral of Registers is
     signal RegisterArray: RegisterArrayType;
 begin
-    outTemp <= RegisterArray;
     ReadData1 <= RegisterArray(conv_integer(ReadRegister1)) when ReadRegister1 <= "1010" else (others => '0');
     ReadData2 <= RegisterArray(conv_integer(ReadRegister2)) when ReadRegister2 <= "1010" else (others => '0');
 

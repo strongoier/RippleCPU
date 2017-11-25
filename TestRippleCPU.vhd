@@ -2,7 +2,7 @@
 -- Company: 
 -- Engineer:
 --
--- Create Date:   12:21:02 11/23/2017
+-- Create Date:   09:19:59 11/24/2017
 -- Design Name:   
 -- Module Name:   C:/ise/RippleCPU/TestRippleCPU.vhd
 -- Project Name:  RippleCPU
@@ -43,7 +43,23 @@ ARCHITECTURE behavior OF TestRippleCPU IS
     PORT(
          Clk : IN  std_logic;
          Rst : IN  std_logic;
-         outPC : OUT  std_logic_vector(15 downto 0);
+         TBRE : IN  std_logic;
+         TSRE : IN  std_logic;
+         DataReady : IN  std_logic;
+         WRN : OUT  std_logic;
+         RDN : OUT  std_logic;
+         Ram1OE : OUT  std_logic;
+         Ram1WE : OUT  std_logic;
+         Ram1EN : OUT  std_logic;
+         Ram1Addr : OUT  std_logic_vector(17 downto 0);
+         Ram1Data : INOUT  std_logic_vector(15 downto 0);
+         Ram2OE : OUT  std_logic;
+         Ram2WE : OUT  std_logic;
+         Ram2EN : OUT  std_logic;
+         Ram2Addr : OUT  std_logic_vector(17 downto 0);
+         Ram2Data : INOUT  std_logic_vector(15 downto 0);
+         DYP0 : OUT  std_logic_vector(6 downto 0);
+         L : OUT  std_logic_vector(15 downto 0);
          outTemp0 : OUT  std_logic_vector(15 downto 0);
          outTemp1 : OUT  std_logic_vector(15 downto 0);
          outTemp2 : OUT  std_logic_vector(15 downto 0);
@@ -67,9 +83,27 @@ ARCHITECTURE behavior OF TestRippleCPU IS
    --Inputs
    signal Clk : std_logic := '0';
    signal Rst : std_logic := '1';
+   signal TBRE : std_logic := '0';
+   signal TSRE : std_logic := '0';
+   signal DataReady : std_logic := '0';
+
+	--BiDirs
+   signal Ram1Data : std_logic_vector(15 downto 0);
+   signal Ram2Data : std_logic_vector(15 downto 0);
 
  	--Outputs
-   signal outPC : std_logic_vector(15 downto 0);
+   signal WRN : std_logic;
+   signal RDN : std_logic;
+   signal Ram1OE : std_logic;
+   signal Ram1WE : std_logic;
+   signal Ram1EN : std_logic;
+   signal Ram1Addr : std_logic_vector(17 downto 0);
+   signal Ram2OE : std_logic;
+   signal Ram2WE : std_logic;
+   signal Ram2EN : std_logic;
+   signal Ram2Addr : std_logic_vector(17 downto 0);
+   signal DYP0 : std_logic_vector(6 downto 0);
+   signal L : std_logic_vector(15 downto 0);
    signal outTemp0 : std_logic_vector(15 downto 0);
    signal outTemp1 : std_logic_vector(15 downto 0);
    signal outTemp2 : std_logic_vector(15 downto 0);
@@ -96,7 +130,23 @@ BEGIN
    uut: RippleCPU PORT MAP (
           Clk => Clk,
           Rst => Rst,
-          outPC => outPC,
+          TBRE => TBRE,
+          TSRE => TSRE,
+          DataReady => DataReady,
+          WRN => WRN,
+          RDN => RDN,
+          Ram1OE => Ram1OE,
+          Ram1WE => Ram1WE,
+          Ram1EN => Ram1EN,
+          Ram1Addr => Ram1Addr,
+          Ram1Data => Ram1Data,
+          Ram2OE => Ram2OE,
+          Ram2WE => Ram2WE,
+          Ram2EN => Ram2EN,
+          Ram2Addr => Ram2Addr,
+          Ram2Data => Ram2Data,
+          DYP0 => DYP0,
+          L => L,
           outTemp0 => outTemp0,
           outTemp1 => outTemp1,
           outTemp2 => outTemp2,
@@ -129,10 +179,7 @@ BEGIN
    stim_proc: process
    begin		
       -- hold reset state for 100 ns.
-      wait for 120 ns;	
-      Rst <= '0';
-      wait for 5 ns;
-      Rst <= '1';
+      wait for 100 ns;	
 
       wait for Clk_period*10;
 
