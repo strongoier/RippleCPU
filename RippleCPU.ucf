@@ -156,3 +156,5 @@ NET "FlashData[3]" LOC = J1;
 NET "FlashData[2]" LOC = J2;
 NET "FlashData[1]" LOC = J4;
 NET "FlashData[0]" LOC = J5;
+NET "KeyboardData" LOC = V6;
+NET "KeyboardClk" LOC = U6;

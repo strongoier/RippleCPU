@@ -110,6 +110,19 @@ package Components is
             Branch    : out STD_LOGIC
         );
     end component;
+		
+		---
+		--- external devices
+		---
+		
+		component Keyboard is
+				port(
+						KeyboardData	: in 	std_logic; --键盘数据输入
+						KeyboardClk		: in 	std_logic;	--键盘时钟输入
+						FilterClk5M		: in 	std_logic; --滤波5M时钟输入
+						KeyboardOut		: out std_logic_vector (7 downto 0) --当前按键状态
+				);
+		end component;
 
 end Components;
 

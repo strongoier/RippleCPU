@@ -14,6 +14,8 @@ entity RippleCPU is
         TBRE: in std_logic;
         TSRE: in std_logic;
         DataReady: in std_logic;
+				KeyboardData: in std_logic;
+				KeyboardClk: in std_logic;
         WRN: out std_logic;
         RDN: out std_logic;
         Ram1OE: out std_logic;
@@ -46,6 +48,7 @@ architecture Behavioral of RippleCPU is
     signal Clk2: std_logic;
     signal Clk4: std_logic;
     signal Clk8: std_logic;
+		signal Clk5M: std_logic;
     -- Boot
     signal Booted: std_logic := '0';
     signal NextRam2Addr: std_logic_vector(17 downto 0) := (others => '0');
@@ -129,15 +132,17 @@ architecture Behavioral of RippleCPU is
     signal DataHazardDetected: std_logic;
     signal ControlHazardDetected: std_logic;
     signal ArchitectureHazardDetected: std_logic;
+		-- Keyboard
+		signal KeyboardOut: std_logic_vector(7 downto 0);
 begin
     ---
     --- Debug
     ---
 
-    cDigital7_Low: Digital7 port map(PC(3 downto 0), DYP1);
-    cDigital7_High: Digital7 port map(PC(7 downto 4), DYP0);
+    cDigital7_Low: Digital7 port map(KeyboardOut(3 downto 0), DYP1);
+    cDigital7_High: Digital7 port map(KeyboardOut(7 downto 4), DYP0);
     L <= IF_Instruction;
-
+		keyBoard: Keyboard port map(KeyboardData, KeyboardClk, Clk5M, KeyboardOut);
 
     -- 
     -- Clk
@@ -166,6 +171,18 @@ begin
             Clk8 <= not Clk8;
         end if;
     end process;
+		
+		DivideClk5M: process (Clk50M)
+		variable count: integer :=0;
+		begin
+				if rising_edge(Clk50M) then
+						count := count + 1;
+						if (count = 5) then
+								Clk5M <= not Clk5M;
+								count := 0;
+						end if;
+				end if;
+		end process;
 
 
     ---
