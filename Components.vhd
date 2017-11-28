@@ -145,14 +145,27 @@ package Components is
             douta : OUT STD_LOGIC_VECTOR(9 DOWNTO 0)
         );
     end component;
-
+    
+    component VGARAM is
+        port (
+            clka : IN STD_LOGIC;
+            wea : IN STD_LOGIC_VECTOR(0 DOWNTO 0);
+            addra : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+            dina : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+            clkb : IN STD_LOGIC;
+            addrb : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+            doutb : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+        );
+    end component;
+    
     component VGA is
         port (
             clk : in  STD_LOGIC;
             rst : in  STD_LOGIC;
-            in_text : in matrix;
-            Data : in STD_LOGIC_VECTOR (9 downto 0);
-            Addr : out STD_LOGIC_VECTOR (13 downto 0);
+            PicData : in STD_LOGIC_VECTOR (9 downto 0);
+            CharData : in STD_LOGIC_VECTOR (7 downto 0);
+            CharAddr : out STD_LOGIC_VECTOR (11 downto 0);
+            PicAddr : out STD_LOGIC_VECTOR (13 downto 0);
             Red : out  STD_LOGIC_VECTOR (2 downto 0);
             Green : out  STD_LOGIC_VECTOR (2 downto 0);
             Blue : out  STD_LOGIC_VECTOR (2 downto 0);
