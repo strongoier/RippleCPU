@@ -38,7 +38,12 @@ entity RippleCPU is
         FlashData: inout std_logic_vector(15 downto 0);
         DYP1: out std_logic_vector(6 downto 0);
         DYP0: out std_logic_vector(6 downto 0);
-        L: out std_logic_vector(15 downto 0)
+        L: out std_logic_vector(15 downto 0);
+        Red: out std_logic_vector(2 downto 0);
+        Green: out std_logic_vector(2 downto 0);
+        Blue: out std_logic_vector(2 downto 0);
+        Hs : out  STD_LOGIC;
+        Vs : out  STD_LOGIC
     );
 end RippleCPU;
 
@@ -132,9 +137,20 @@ architecture Behavioral of RippleCPU is
     signal DataHazardDetected: std_logic;
     signal ControlHazardDetected: std_logic;
     signal ArchitectureHazardDetected: std_logic;
-		-- Keyboard
-		signal KeyboardOut: std_logic_vector(7 downto 0);
+	-- Keyboard
+	signal KeyboardOut: std_logic_vector(7 downto 0);
+    -- VGA
+    signal ROMAddr: std_logic_vector(13 downto 0);
+    signal VGAData: std_logic_vector(9 downto 0);
 begin
+
+    ---
+    --- VGA
+    ---
+    
+    vga: VGA port map(Clk50M, Rst, VGAData, ROMAddr, Red, Green, Blue, Hs, Vs);
+    charpicrom: CharPicRom port map(Clk50M, ROMAddr, VGAData);
+    
     ---
     --- Debug
     ---

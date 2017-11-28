@@ -124,6 +124,37 @@ package Components is
 				);
 		end component;
 
+    ---
+    --- Character Picture ROM
+    ---
+    
+    component CharPicROM is
+        port (
+            clka : IN STD_LOGIC;
+            addra : IN STD_LOGIC_VECTOR(13 DOWNTO 0);
+            douta : OUT STD_LOGIC_VECTOR(9 DOWNTO 0)
+        );
+    end component;
+    
+    ---
+    --- VGA
+    ---
+    
+    component VGA is
+        port (
+            clk : in  STD_LOGIC;
+            rst : in  STD_LOGIC;
+            --in_text : in matrix;
+            Data : in STD_LOGIC_VECTOR (9 downto 0);
+            Addr : out STD_LOGIC_VECTOR (13 downto 0);
+            Red : out  STD_LOGIC_VECTOR (2 downto 0);
+            Green : out  STD_LOGIC_VECTOR (2 downto 0);
+            Blue : out  STD_LOGIC_VECTOR (2 downto 0);
+            Hs : out  STD_LOGIC;
+            Vs : out  STD_LOGIC
+        );
+    end component;
+
 end Components;
 
 package body Components is
