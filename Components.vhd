@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use work.Definitions.all;
 
 package Components is
 
@@ -22,6 +23,18 @@ package Components is
             WriteData: in std_logic_vector(15 downto 0);
             ReadData: out std_logic_vector(15 downto 0)
         );
+    end component;
+
+
+    ---
+    --- Clk
+    ---
+
+    component ClkGen is
+       port ( CLKIN_IN        : in    std_logic; 
+              CLKFX_OUT       : out   std_logic; 
+              CLKIN_IBUFG_OUT : out   std_logic; 
+              CLK0_OUT        : out   std_logic);
     end component;
 
 
@@ -110,24 +123,21 @@ package Components is
             Branch    : out STD_LOGIC
         );
     end component;
-		
-		---
-		--- external devices
-		---
-		
-		component Keyboard is
-				port(
-						KeyboardData	: in 	std_logic; --键盘数据输入
-						KeyboardClk		: in 	std_logic;	--键盘时钟输入
-						FilterClk5M		: in 	std_logic; --滤波5M时钟输入
-						KeyboardOut		: out std_logic_vector (7 downto 0) --当前按键状态
-				);
-		end component;
+
 
     ---
-    --- Character Picture ROM
+    --- External Devices
     ---
-    
+
+    component Keyboard is
+        port (
+            KeyboardData: in std_logic;
+            KeyboardClk: in std_logic;
+            FilterClk5M: in std_logic;
+            KeyboardOut: out std_logic_vector(7 downto 0)
+        );
+    end component;
+
     component CharPicROM is
         port (
             clka : IN STD_LOGIC;
@@ -135,16 +145,12 @@ package Components is
             douta : OUT STD_LOGIC_VECTOR(9 DOWNTO 0)
         );
     end component;
-    
-    ---
-    --- VGA
-    ---
-    
+
     component VGA is
         port (
             clk : in  STD_LOGIC;
             rst : in  STD_LOGIC;
-            --in_text : in matrix;
+            in_text : in matrix;
             Data : in STD_LOGIC_VECTOR (9 downto 0);
             Addr : out STD_LOGIC_VECTOR (13 downto 0);
             Red : out  STD_LOGIC_VECTOR (2 downto 0);

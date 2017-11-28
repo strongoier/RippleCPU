@@ -2,6 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.std_logic_arith.all;
+use ieee.numeric_std.all;
 use work.Definitions.all;
 use work.Components.all;
 
@@ -10,12 +11,12 @@ entity RippleCPU is
         Clk50M: in std_logic;
         Clk11M: in std_logic;
         ClkHand: in std_logic;
+--        KeyboardClk: in std_logic;
+--        KeyboardData: in std_logic;
         Rst: in std_logic;
         TBRE: in std_logic;
         TSRE: in std_logic;
         DataReady: in std_logic;
-				KeyboardData: in std_logic;
-				KeyboardClk: in std_logic;
         WRN: out std_logic;
         RDN: out std_logic;
         Ram1OE: out std_logic;
@@ -36,24 +37,28 @@ entity RippleCPU is
         FlashRP: out std_logic;
         FlashAddr: out std_logic_vector(22 downto 0);
         FlashData: inout std_logic_vector(15 downto 0);
-        DYP1: out std_logic_vector(6 downto 0);
-        DYP0: out std_logic_vector(6 downto 0);
-        L: out std_logic_vector(15 downto 0);
         Red: out std_logic_vector(2 downto 0);
         Green: out std_logic_vector(2 downto 0);
         Blue: out std_logic_vector(2 downto 0);
-        Hs : out  STD_LOGIC;
-        Vs : out  STD_LOGIC
+        Hs: out std_logic;
+        Vs: out std_logic;
+        DYP1: out std_logic_vector(6 downto 0);
+        DYP0: out std_logic_vector(6 downto 0);
+        L: out std_logic_vector(15 downto 0)
     );
 end RippleCPU;
 
 architecture Behavioral of RippleCPU is
-    -- Clk
+    -- Clk 
+    signal Clk50MBuf: std_logic;
+    signal Clk200M: std_logic;
+    signal ClkMagic: std_logic := '1';
+    signal ClkSerial: std_logic := '1';
+    signal Clk25M: std_logic;
+    signal Clk12p5M: std_logic;
+    signal Clk6p25M: std_logic;
+    signal Clk5M: std_logic;
     signal Clk: std_logic;
-    signal Clk2: std_logic;
-    signal Clk4: std_logic;
-    signal Clk8: std_logic;
-		signal Clk5M: std_logic;
     -- Boot
     signal Booted: std_logic := '0';
     signal NextRam2Addr: std_logic_vector(17 downto 0) := (others => '0');
@@ -110,6 +115,7 @@ architecture Behavioral of RippleCPU is
     signal EX_ALUResult: std_logic_vector(15 downto 0);
     signal EX_PCBranch: std_logic;
     -- EX2MEM
+    signal EX2MEM_Flush: std_logic;
     signal EX2MEM_Forward2Result: std_logic_vector(15 downto 0);
     signal EX2MEM_ALUResult: std_logic_vector(15 downto 0);
     signal EX2MEM_RegWrite: std_logic;
@@ -138,67 +144,96 @@ architecture Behavioral of RippleCPU is
     signal ControlHazardDetected: std_logic;
     signal ArchitectureHazardDetected: std_logic;
 	-- Keyboard
-	signal KeyboardOut: std_logic_vector(7 downto 0);
+    signal KeyboardOut: std_logic_vector(7 downto 0);
     -- VGA
     signal ROMAddr: std_logic_vector(13 downto 0);
     signal VGAData: std_logic_vector(9 downto 0);
+    signal text: matrix;
 begin
-
-    ---
-    --- VGA
-    ---
-    
-    vga: VGA port map(Clk50M, Rst, VGAData, ROMAddr, Red, Green, Blue, Hs, Vs);
-    charpicrom: CharPicRom port map(Clk50M, ROMAddr, VGAData);
-    
     ---
     --- Debug
     ---
 
-    cDigital7_Low: Digital7 port map(KeyboardOut(3 downto 0), DYP1);
-    cDigital7_High: Digital7 port map(KeyboardOut(7 downto 4), DYP0);
+    cDigital7_Low: Digital7 port map(PC(3 downto 0), DYP1);
+    cDigital7_High: Digital7 port map(PC(7 downto 4), DYP0);
     L <= IF_Instruction;
-		keyBoard: Keyboard port map(KeyboardData, KeyboardClk, Clk5M, KeyboardOut);
+
+    process (Rst)
+    begin
+        for i in 0 to 29 loop
+            for j in 0 to 79 loop
+                text(i)(j) <= std_logic_vector(to_unsigned(i + 1, 8));
+            end loop;
+        end loop;
+    end process;
 
     -- 
     -- Clk
     --
 
-    --Clk <= Clk8 when Booted = '0' else ClkHand;
-    Clk <= Clk8 when Booted = '0' else Clk2;
+    cClkGen: ClkGen port map(CLKIN_IN => Clk50M, CLKFX_OUT => Clk200M, CLKIN_IBUFG_OUT => Clk50MBuf);
 
-    DivideClk2: process (Clk50M)
+    --Clk <= Clk6p25M when Booted = '0' else ClkHand;
+    Clk <= Clk6p25M when Booted = '0' else ClkMagic;
+
+    DivideClkMagic: process (Clk200M)
+        variable Count: integer := 0;
     begin
-        if rising_edge(Clk50M) then
-            Clk2 <= not Clk2;
+        if rising_edge(Clk200M) then
+            Count := Count + 1;
+            if Count = 1 then
+                ClkMagic <= '0';
+                ClkSerial <= '0';
+            elsif Count = 2 then
+                ClkSerial <= '1';
+            elsif Count = 4 then
+                ClkMagic <= '1';
+                Count := 0;
+            end if;
         end if;
     end process;
 
-    DivideClk4: process (Clk2)
+    DivideClk25M: process (Clk50MBuf)
     begin
-        if rising_edge(Clk2) then
-            Clk4 <= not Clk4;
+        if rising_edge(Clk50MBuf) then
+            Clk25M <= not Clk25M;
         end if;
     end process;
 
-    DivideClk8: process (Clk4)
+    DivideClk12p5M: process (Clk25M)
     begin
-        if rising_edge(Clk4) then
-            Clk8 <= not Clk8;
+        if rising_edge(Clk25M) then
+            Clk12p5M <= not Clk12p5M;
         end if;
     end process;
-		
-		DivideClk5M: process (Clk50M)
-		variable count: integer :=0;
-		begin
-				if rising_edge(Clk50M) then
-						count := count + 1;
-						if (count = 5) then
-								Clk5M <= not Clk5M;
-								count := 0;
-						end if;
-				end if;
-		end process;
+
+    DivideClk6p25M: process (Clk12p5M)
+    begin
+        if rising_edge(Clk12p5M) then
+            Clk6p25M <= not Clk6p25M;
+        end if;
+    end process;
+
+    DivideClk5M: process (Clk50MBuf)
+        variable Count: integer :=0;
+    begin
+        if rising_edge(Clk50MBuf) then
+            Count := Count + 1;
+            if Count = 5 then
+                Clk5M <= not Clk5M;
+                Count := 0;
+            end if;
+        end if;
+    end process;
+
+
+    ---
+    --- External Devices
+    ---
+
+    cVGA: VGA port map(Clk25M, Rst, text, VGAData, ROMAddr, Red, Green, Blue, Hs, Vs);
+    cCharPicROM: CharPicROM port map(Clk50MBuf, ROMAddr, VGAData);
+    --cKeyBoard: Keyboard port map(KeyboardData, KeyboardClk, Clk5M, KeyboardOut);
 
 
     ---
@@ -210,7 +245,7 @@ begin
     FlashCE <= '0';
     FlashRP <= '1';
 
-    BootFromFlash: process (Clk8, Rst)
+    BootFromFlash: process (Clk6p25M, Rst)
         variable Status: integer := 0;
         variable Count: integer := 0;
         variable NextFlashAddr: std_logic_vector(22 downto 0) := (others => '0');
@@ -223,7 +258,7 @@ begin
             NextRam2Addr <= (others => '0');
             Count := 0;
             Status := 0;
-        elsif rising_edge(Clk8) and Booted = '0' then
+        elsif rising_edge(Clk6p25M) and Booted = '0' then
             case Status is
                 when 0 =>
                     FlashWE <= '0';
@@ -281,7 +316,7 @@ begin
     --- Ram1: Data Memory & Serial Port
     ---
 
-    Ram1: process (Clk, Booted, EX2MEM_ALUResult, EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_Forward2Result, ArchitectureHazardDetected, Ram2Data, DataReady, TBRE, TSRE)
+    Ram1: process (Clk, ClkSerial, Booted, EX2MEM_ALUResult, EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_Forward2Result, ArchitectureHazardDetected, Ram2Data, DataReady, TBRE, TSRE)
     begin
         if EX2MEM_ALUResult = "1011111100000001" then
             Ram1OE <= '1';
@@ -304,7 +339,7 @@ begin
             end if;
             MEM_ReadDataFromMem <= Ram1Data;
             RDN <= Clk or not Booted or not EX2MEM_MemRead;
-            WRN <= Clk or not Booted or not EX2MEM_MemWrite;
+            WRN <= ClkSerial or not Booted or not EX2MEM_MemWrite;
         else
             Ram1OE <= Clk or not Booted or ArchitectureHazardDetected or not EX2MEM_MemRead;
             Ram1WE <= Clk or not Booted or ArchitectureHazardDetected or not EX2MEM_MemWrite;
@@ -330,8 +365,9 @@ begin
     --- PC
     ---
 
-    PCWrite <= not(DataHazardDetected or ArchitectureHazardDetected);
-    PCDataIn <= EX_Forward1Result when ID2EX_PCJump = '1' else
+    PCWrite <= (not DataHazardDetected) or ArchitectureHazardDetected;
+    PCDataIn <= PC - 2 when ArchitectureHazardDetected = '1' else
+                EX_Forward1Result when ID2EX_PCJump = '1' else
                 ID2EX_PC + ID2EX_ExtendedImmediate when EX_PCBranch = '1' else
                 PC + 1;
     cPC: RegVector16 generic map(PC_INITIAL) port map(Clk, Global_Flush, PCWrite, PCDataIn, PC);
@@ -366,7 +402,7 @@ begin
     --- ID2EX
     ---
 
-    ID2EX_Flush <= DataHazardDetected or Global_Flush;
+    ID2EX_Flush <= DataHazardDetected or ArchitectureHazardDetected or Global_Flush;
     cID2EX_RegWrite: Reg port map(Clk, ID2EX_Flush, '1', ID_RegWrite, ID2EX_RegWrite);
     cID2EX_MemToReg: Reg port map(Clk, ID2EX_Flush, '1', ID_MemToReg, ID2EX_MemToReg);
     cID2EX_MemRead: Reg port map(Clk, ID2EX_Flush, '1', ID_MemRead, ID2EX_MemRead);
@@ -403,15 +439,16 @@ begin
     --- EX2MEM
     ---
 
-    cEX2MEM_Forward2Result: RegVector16 generic map(ZERO_16) port map(Clk, Global_Flush, '1', EX_Forward2Result, EX2MEM_Forward2Result);
-    cEX2MEM_ALUResult: RegVector16 generic map(ZERO_16) port map(Clk, Global_Flush, '1', EX_ALUResult, EX2MEM_ALUResult);
-    cEX2MEM_RegWrite: Reg port map(Clk, Global_Flush, '1', ID2EX_RegWrite, EX2MEM_RegWrite);
-    cEX2MEM_MemToReg: Reg port map(Clk, Global_Flush, '1', ID2EX_MemToReg, EX2MEM_MemToReg);
-    cEX2MEM_MemRead: Reg port map(Clk, Global_Flush, '1', ID2EX_MemRead, EX2MEM_MemRead);
-    cEX2MEM_MemWrite: Reg port map(Clk, Global_Flush, '1', ID2EX_MemWrite, EX2MEM_MemWrite);
-    cEX2MEM_PCToReg: Reg port map(Clk, Global_Flush, '1', ID2EX_PCToReg, EX2MEM_PCToReg);
-    cEX2MEM_PC: RegVector16 generic map(PC_INITIAL) port map(Clk, Global_Flush, '1', ID2EX_PC, EX2MEM_PC);
-    cEX2MEM_WriteRegister: RegVector4 generic map(REG_ZERO) port map(Clk, Global_Flush, '1', ID2EX_WriteRegister, EX2MEM_WriteRegister);
+    EX2MEM_Flush <= ArchitectureHazardDetected or Global_Flush;
+    cEX2MEM_Forward2Result: RegVector16 generic map(ZERO_16) port map(Clk, EX2MEM_Flush, '1', EX_Forward2Result, EX2MEM_Forward2Result);
+    cEX2MEM_ALUResult: RegVector16 generic map(ZERO_16) port map(Clk, EX2MEM_Flush, '1', EX_ALUResult, EX2MEM_ALUResult);
+    cEX2MEM_RegWrite: Reg port map(Clk, EX2MEM_Flush, '1', ID2EX_RegWrite, EX2MEM_RegWrite);
+    cEX2MEM_MemToReg: Reg port map(Clk, EX2MEM_Flush, '1', ID2EX_MemToReg, EX2MEM_MemToReg);
+    cEX2MEM_MemRead: Reg port map(Clk, EX2MEM_Flush, '1', ID2EX_MemRead, EX2MEM_MemRead);
+    cEX2MEM_MemWrite: Reg port map(Clk, EX2MEM_Flush, '1', ID2EX_MemWrite, EX2MEM_MemWrite);
+    cEX2MEM_PCToReg: Reg port map(Clk, EX2MEM_Flush, '1', ID2EX_PCToReg, EX2MEM_PCToReg);
+    cEX2MEM_PC: RegVector16 generic map(PC_INITIAL) port map(Clk, EX2MEM_Flush, '1', ID2EX_PC, EX2MEM_PC);
+    cEX2MEM_WriteRegister: RegVector4 generic map(REG_ZERO) port map(Clk, EX2MEM_Flush, '1', ID2EX_WriteRegister, EX2MEM_WriteRegister);
 
 
     ---

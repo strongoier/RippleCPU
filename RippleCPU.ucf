@@ -156,11 +156,6 @@ NET "FlashData[3]" LOC = J1;
 NET "FlashData[2]" LOC = J2;
 NET "FlashData[1]" LOC = J4;
 NET "FlashData[0]" LOC = J5;
-NET "KeyboardData" LOC = V6;
-NET "KeyboardClk" LOC = U6;
-
-# PlanAhead Generated physical constraints 
-
 NET "Blue[2]" LOC = B6;
 NET "Blue[1]" LOC = A6;
 NET "Blue[0]" LOC = D5;

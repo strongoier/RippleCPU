@@ -37,7 +37,7 @@ use work.Components.all;
 entity VGA is
     Port ( clk : in  STD_LOGIC;
            rst : in  STD_LOGIC;
-           --in_text : in matrix;
+           in_text : in matrix;
            Data : in STD_LOGIC_VECTOR (9 downto 0);
            Addr : out STD_LOGIC_VECTOR (13 downto 0) := (others => '0');
            Red : out  STD_LOGIC_VECTOR (2 downto 0) := (others => '1');
@@ -48,19 +48,14 @@ entity VGA is
 end VGA;
 
 architecture Behavioral of VGA is
-    signal curClk : STD_LOGIC := '0';
+    signal curClk : STD_LOGIC;
     constant GRID_WIDTH  : integer := 8;
     constant GRID_HEIGHT : integer := 16;
-    --signal cur_text : matrix;
+    signal cur_text : matrix;
     signal cur_grid : STD_LOGIC_VECTOR(8 downto 0) := (others=>'1');
 begin
 
-process (clk)
-begin
-    if (clk'event and clk = '0') then
-        curClk <= not curClk;
-    end if;
-end process;
+curClk <= clk;
 
 process (rst, curClk)
     variable curHorizon  : integer := 0;
@@ -84,10 +79,11 @@ begin
         Blue <= (others=>'1');
         Addr <= (others=>'0');
         cur_grid <= (others=>'1');
-        --cur_text <= in_text;
+        cur_text <= in_text;
     elsif (curClk'event and curClk = '1') then
-        --if (curHorizon = 0 and curVertical = 0) then
-        --    cur_text <= in_text;
+        if (curHorizon = 0 and curVertical = 0) then
+            cur_text <= in_text;
+        end if;
         if (curHorizon >= 656 and curHorizon < 752) then
             Hs <= '0';
         else
@@ -133,7 +129,8 @@ begin
             end if;
         end if;
         --Addr<=cur_text(grid_high_v)(grid_high_h)(6 downto 0)&(TO_STDLOGICVECTOR(grid_low_h, 3))&(TO_STDLOGICVECTOR(grid_low_v, 4);
-        Addr<="0000010"&STD_LOGIC_VECTOR(TO_UNSIGNED(grid_low_h, 3))&STD_LOGIC_VECTOR(TO_UNSIGNED(grid_low_v, 4));
+        --Addr<="0000010"&STD_LOGIC_VECTOR(TO_UNSIGNED(grid_low_h, 3))&STD_LOGIC_VECTOR(TO_UNSIGNED(grid_low_v, 4));
+        Addr<=cur_text(grid_high_v)(grid_high_h)(6 downto 0)&STD_LOGIC_VECTOR(TO_UNSIGNED(grid_low_h, 3))&STD_LOGIC_VECTOR(TO_UNSIGNED(grid_low_v, 4));
     end if;
 end process;
 
