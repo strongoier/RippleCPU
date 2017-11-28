@@ -37,11 +37,11 @@ entity RippleCPU is
         FlashRP: out std_logic;
         FlashAddr: out std_logic_vector(22 downto 0);
         FlashData: inout std_logic_vector(15 downto 0);
---        Red: out std_logic_vector(2 downto 0);
---        Green: out std_logic_vector(2 downto 0);
---        Blue: out std_logic_vector(2 downto 0);
---        Hs: out std_logic;
---        Vs: out std_logic;
+        Red: out std_logic_vector(2 downto 0);
+        Green: out std_logic_vector(2 downto 0);
+        Blue: out std_logic_vector(2 downto 0);
+        Hs: out std_logic;
+        Vs: out std_logic;
         DYP1: out std_logic_vector(6 downto 0);
         DYP0: out std_logic_vector(6 downto 0);
         L: out std_logic_vector(15 downto 0)
@@ -146,16 +146,21 @@ architecture Behavioral of RippleCPU is
 	-- Keyboard
     signal KeyboardOut: std_logic_vector(7 downto 0);
     -- VGA
-    signal CharPicROMAddr: std_logic_vector(13 downto 0);
-    signal CharPicROMData: std_logic_vector(9 downto 0);
-    signal VGARAMData: std_logic_vector(7 downto 0);
+    signal PicAddr: std_logic_vector(13 downto 0);
+    signal PicData: std_logic_vector(9 downto 0);
+    signal CharAddr: std_logic_vector(11 downto 0);
+    signal CharData: std_logic_vector(7 downto 0);
+    signal WriteCharAddr: std_logic_vector(11 downto 0) := (others => '1');
+    signal WriteCharData: std_logic_vector(7 downto 0) := (others => '0');
+    signal WriteCharDataBuf: std_logic_vector(7 downto 0) := (others => '0');
+    signal WriteCharWE: std_logic_vector(0 downto 0);
 --    signal text: matrix;
 begin
     ---
     --- Debug
     ---
-
-    cDigital7_Low: Digital7 port map(KeyboardOut(3 downto 0), DYP1);
+   cDigital7_Low: Digital7 port map(WriteCharDataBuf(3 downto 0), DYP1);
+    --cDigital7_Low: Digital7 port map(KeyboardOut(3 downto 0), DYP1);
     cDigital7_High: Digital7 port map(KeyboardOut(7 downto 4), DYP0);
     L <= IF_Instruction;
 
@@ -232,8 +237,9 @@ begin
     --- External Devices
     ---
 
-    -- cVGA: VGA port map(Clk25M, Rst, text, VGAData, ROMAddr, Red, Green, Blue, Hs, Vs);
-    -- cCharPicROM: CharPicROM port map(Clk50MBuf, ROMAddr, VGAData);
+    cVGA: VGA port map(Clk25M, Rst, PicData, CharData, CharAddr, PicAddr, Red, Green, Blue, Hs, Vs);
+    cCharPicROM: CharPicROM port map(Clk50MBuf, PicAddr, PicData);
+    cVGARAM: VGARAM port map(Clk50MBuf, WriteCharWE, WriteCharAddr, WriteCharData, Clk50MBuf, CharAddr, CharData);
     cKeyBoard: Keyboard port map(KeyboardData, KeyboardClk, Clk5M, KeyboardOut);
 
 
@@ -317,15 +323,44 @@ begin
     --- Ram1: Data Memory & Serial Port
     ---
 
+    WriteCharWE(0) <= Booted;
     Ram1: process (Clk, ClkSerial, Booted, EX2MEM_ALUResult, EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_Forward2Result, ArchitectureHazardDetected, Ram2Data, DataReady, TBRE, TSRE)
     begin
+        if falling_edge(Clk) and EX2MEM_MemWrite = '1' then
+            if EX2MEM_ALUResult = "1011111100000010" then -- VGA Data
+                WriteCharDataBuf <= EX2MEM_Forward2Result(7 downto 0);
+            elsif EX2MEM_ALUResult = "1011111100000011" then -- VGA Address
+                WriteCharData <= WriteCharDataBuf;
+                WriteCharAddr <= EX2MEM_Forward2Result(11 downto 0);
+            end if;
+        end if;
         if EX2MEM_ALUResult = "1011111100000010" then -- VGA Data
-            VGARAMData <= EX2MEM_Forward2Result(7 downto 0);
+            Ram1OE <= '1';
+            Ram1WE <= '1';
+            Ram1EN <= '1';
+            Ram1Addr <= (others => '0');
+            Ram1Data <= (others => 'Z');
+            MEM_ReadDataFromMem <= (others => '0');
+            RDN <= '1';
+            WRN <= '1';
         elsif EX2MEM_ALUResult = "1011111100000011" then -- VGA Address
-            <= EX2MEM_Forward2Result(11 downto 0);
-            WEA <= '0';
+            Ram1OE <= '1';
+            Ram1WE <= '1';
+            Ram1EN <= '1';
+            Ram1Addr <= (others => '0');
+            Ram1Data <= (others => 'Z');
+            MEM_ReadDataFromMem <= (others => '0');
+            RDN <= '1';
+            WRN <= '1';
         elsif EX2MEM_ALUResult = "1011111100000100" then -- Keyboard
-            MEM_ReadDataFromMem <= KeyboardOut;
+            Ram1OE <= '1';
+            Ram1WE <= '1';
+            Ram1EN <= '1';
+            Ram1Addr <= (others => '0');
+            Ram1Data <= (others => 'Z');
+            MEM_ReadDataFromMem <= "00000000" & KeyboardOut;
+            RDN <= '1';
+            WRN <= '1';
         elsif EX2MEM_ALUResult = "1011111100000001" then -- Serial Port
             Ram1OE <= '1';
             Ram1WE <= '1';
