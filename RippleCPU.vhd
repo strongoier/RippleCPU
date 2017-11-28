@@ -11,8 +11,8 @@ entity RippleCPU is
         Clk50M: in std_logic;
         Clk11M: in std_logic;
         ClkHand: in std_logic;
---        KeyboardClk: in std_logic;
---        KeyboardData: in std_logic;
+        KeyboardClk: in std_logic;
+        KeyboardData: in std_logic;
         Rst: in std_logic;
         TBRE: in std_logic;
         TSRE: in std_logic;
@@ -37,11 +37,11 @@ entity RippleCPU is
         FlashRP: out std_logic;
         FlashAddr: out std_logic_vector(22 downto 0);
         FlashData: inout std_logic_vector(15 downto 0);
-        Red: out std_logic_vector(2 downto 0);
-        Green: out std_logic_vector(2 downto 0);
-        Blue: out std_logic_vector(2 downto 0);
-        Hs: out std_logic;
-        Vs: out std_logic;
+--        Red: out std_logic_vector(2 downto 0);
+--        Green: out std_logic_vector(2 downto 0);
+--        Blue: out std_logic_vector(2 downto 0);
+--        Hs: out std_logic;
+--        Vs: out std_logic;
         DYP1: out std_logic_vector(6 downto 0);
         DYP0: out std_logic_vector(6 downto 0);
         L: out std_logic_vector(15 downto 0)
@@ -146,26 +146,27 @@ architecture Behavioral of RippleCPU is
 	-- Keyboard
     signal KeyboardOut: std_logic_vector(7 downto 0);
     -- VGA
-    signal ROMAddr: std_logic_vector(13 downto 0);
-    signal VGAData: std_logic_vector(9 downto 0);
-    signal text: matrix;
+    signal CharPicROMAddr: std_logic_vector(13 downto 0);
+    signal CharPicROMData: std_logic_vector(9 downto 0);
+    signal VGARAMData: std_logic_vector(7 downto 0);
+--    signal text: matrix;
 begin
     ---
     --- Debug
     ---
 
-    cDigital7_Low: Digital7 port map(PC(3 downto 0), DYP1);
-    cDigital7_High: Digital7 port map(PC(7 downto 4), DYP0);
+    cDigital7_Low: Digital7 port map(KeyboardOut(3 downto 0), DYP1);
+    cDigital7_High: Digital7 port map(KeyboardOut(7 downto 4), DYP0);
     L <= IF_Instruction;
 
-    process (Rst)
-    begin
-        for i in 0 to 29 loop
-            for j in 0 to 79 loop
-                text(i)(j) <= std_logic_vector(to_unsigned(i + 1, 8));
-            end loop;
-        end loop;
-    end process;
+--    process (Rst)
+--    begin
+--        for i in 0 to 29 loop
+--            for j in 0 to 79 loop
+--                text(i)(j) <= std_logic_vector(to_unsigned(i + 1, 8));
+--            end loop;
+--        end loop;
+--    end process;
 
     -- 
     -- Clk
@@ -184,7 +185,7 @@ begin
             if Count = 1 then
                 ClkMagic <= '0';
                 ClkSerial <= '0';
-            elsif Count = 2 then
+            elsif Count = 3 then
                 ClkSerial <= '1';
             elsif Count = 4 then
                 ClkMagic <= '1';
@@ -231,9 +232,9 @@ begin
     --- External Devices
     ---
 
-    cVGA: VGA port map(Clk25M, Rst, text, VGAData, ROMAddr, Red, Green, Blue, Hs, Vs);
-    cCharPicROM: CharPicROM port map(Clk50MBuf, ROMAddr, VGAData);
-    --cKeyBoard: Keyboard port map(KeyboardData, KeyboardClk, Clk5M, KeyboardOut);
+    -- cVGA: VGA port map(Clk25M, Rst, text, VGAData, ROMAddr, Red, Green, Blue, Hs, Vs);
+    -- cCharPicROM: CharPicROM port map(Clk50MBuf, ROMAddr, VGAData);
+    cKeyBoard: Keyboard port map(KeyboardData, KeyboardClk, Clk5M, KeyboardOut);
 
 
     ---
@@ -318,7 +319,14 @@ begin
 
     Ram1: process (Clk, ClkSerial, Booted, EX2MEM_ALUResult, EX2MEM_MemRead, EX2MEM_MemWrite, EX2MEM_Forward2Result, ArchitectureHazardDetected, Ram2Data, DataReady, TBRE, TSRE)
     begin
-        if EX2MEM_ALUResult = "1011111100000001" then
+        if EX2MEM_ALUResult = "1011111100000010" then -- VGA Data
+            VGARAMData <= EX2MEM_Forward2Result(7 downto 0);
+        elsif EX2MEM_ALUResult = "1011111100000011" then -- VGA Address
+            <= EX2MEM_Forward2Result(11 downto 0);
+            WEA <= '0';
+        elsif EX2MEM_ALUResult = "1011111100000100" then -- Keyboard
+            MEM_ReadDataFromMem <= KeyboardOut;
+        elsif EX2MEM_ALUResult = "1011111100000001" then -- Serial Port
             Ram1OE <= '1';
             Ram1WE <= '1';
             Ram1EN <= '1';
@@ -327,7 +335,7 @@ begin
             MEM_ReadDataFromMem <= "00000000000000" & DataReady & (TBRE and TSRE);
             RDN <= '1';
             WRN <= '1';
-        elsif EX2MEM_ALUResult = "1011111100000000" then
+        elsif EX2MEM_ALUResult = "1011111100000000" then -- Serial Port Ready
             Ram1OE <= '1';
             Ram1WE <= '1';
             Ram1EN <= '1';
@@ -340,7 +348,7 @@ begin
             MEM_ReadDataFromMem <= Ram1Data;
             RDN <= Clk or not Booted or not EX2MEM_MemRead;
             WRN <= ClkSerial or not Booted or not EX2MEM_MemWrite;
-        else
+        else -- Data Memory
             Ram1OE <= Clk or not Booted or ArchitectureHazardDetected or not EX2MEM_MemRead;
             Ram1WE <= Clk or not Booted or ArchitectureHazardDetected or not EX2MEM_MemWrite;
             Ram1EN <= '0';
