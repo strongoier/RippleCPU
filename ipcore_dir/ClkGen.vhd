@@ -7,7 +7,7 @@
 -- \   \   \/     Version : 14.7
 --  \   \         Application : xaw2vhdl
 --  /   /         Filename : ClkGen.vhd
--- /___/   /\     Timestamp : 11/29/2017 01:01:12
+-- /___/   /\     Timestamp : 11/29/2017 12:36:52
 -- \   \  /  \ 
 --  \___\/\___\ 
 --

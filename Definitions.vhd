@@ -90,7 +90,7 @@ package Definitions is
     constant key_left: integer :=53;
     constant key_right: integer :=54;
     constant key_lshft: integer :=55;
-    constant key_rshft: integer :=56;
+    constant key_esc: integer :=56;
 end Definitions;
 
 package body Definitions is

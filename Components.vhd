@@ -164,6 +164,7 @@ package Components is
             rst : in  STD_LOGIC;
             PicData : in STD_LOGIC_VECTOR (9 downto 0);
             CharData : in STD_LOGIC_VECTOR (7 downto 0);
+            Pos : in STD_LOGIC_VECTOR (11 downto 0);
             CharAddr : out STD_LOGIC_VECTOR (11 downto 0);
             PicAddr : out STD_LOGIC_VECTOR (13 downto 0);
             Red : out  STD_LOGIC_VECTOR (2 downto 0);

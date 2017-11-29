@@ -39,6 +39,7 @@ entity VGA is
            rst : in  STD_LOGIC;
            PicData : in STD_LOGIC_VECTOR (9 downto 0);
            CharData : in STD_LOGIC_VECTOR (7 downto 0);
+           Pos : in STD_LOGIC_VECTOR (11 downto 0);
            CharAddr : out STD_LOGIC_VECTOR (11 downto 0) := (others => '0');
            PicAddr : out STD_LOGIC_VECTOR (13 downto 0) := (others => '0');
            Red : out  STD_LOGIC_VECTOR (2 downto 0) := (others => '0');
@@ -103,9 +104,27 @@ begin
         if (curHorizon < 640 and curVertical < 480) then
             -- draw
             cur_grid <= PicData(9 downto 1);
-            Red <= not cur_grid(8 downto 6);
-            Green <= not cur_grid(5 downto 3);
-            Blue <= not cur_grid(2 downto 0);
+            if CONV_INTEGER(Pos) = grid_high_v * 80 + grid_high_h and grid_low_v /= 0 and grid_low_h /= 0 and grid_low_v + 1 /= GRID_HEIGHT and grid_low_h + 1 /= GRID_WIDTH then
+                if (CONV_INTEGER(cur_grid(8 downto 6)) > 3) then
+                    Red <= "011";
+                else
+                    Red <= not cur_grid(8 downto 6);
+                end if;
+                if (CONV_INTEGER(cur_grid(5 downto 3)) > 3) then
+                    Green <= "011";
+                else
+                    Green <= not cur_grid(5 downto 3);
+                end if;
+                if (CONV_INTEGER(cur_grid(2 downto 0)) > 3) then
+                    Blue <= "011";
+                else
+                    Blue <= not cur_grid(2 downto 0);
+                end if;
+            else
+                Red <= not cur_grid(8 downto 6);
+                Green <= not cur_grid(5 downto 3);
+                Blue <= not cur_grid(2 downto 0);
+            end if;
         else
             Red <= (others=>'0');
             Green <= (others=>'0');

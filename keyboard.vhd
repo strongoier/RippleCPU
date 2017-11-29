@@ -232,8 +232,8 @@ begin
 						key_state(key_slash) <= '0';
 					when x"12" =>
 						key_state(key_lshft) <= '0';
-					when x"59" =>
-						key_state(key_rshft) <= '0';
+					when x"76" =>
+						key_state(key_esc) <= '0';
 					when others =>
 				end case;
 			else
@@ -348,8 +348,8 @@ begin
 						tmp_key := key_slash;
 					when x"12" =>
 						tmp_key := key_lshft;
-					when x"59" =>
-						tmp_key := key_rshft;
+					when x"76" =>
+						tmp_key := key_esc;
 					when others =>
 						tmp_key := 0;
 				end case;

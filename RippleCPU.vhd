@@ -154,14 +154,15 @@ architecture Behavioral of RippleCPU is
     signal WriteCharData: std_logic_vector(7 downto 0) := (others => '0');
     signal WriteCharDataBuf: std_logic_vector(7 downto 0) := (others => '0');
     signal WriteCharWE: std_logic_vector(0 downto 0);
+    signal Pos: std_logic_vector(11 downto 0) := (others => '0');
 --    signal text: matrix;
 begin
     ---
     --- Debug
     ---
-   cDigital7_Low: Digital7 port map(WriteCharDataBuf(3 downto 0), DYP1);
+    cDigital7_Low: Digital7 port map(PC(3 downto 0), DYP1);
     --cDigital7_Low: Digital7 port map(KeyboardOut(3 downto 0), DYP1);
-    cDigital7_High: Digital7 port map(KeyboardOut(7 downto 4), DYP0);
+    cDigital7_High: Digital7 port map(PC(7 downto 4), DYP0);
     L <= IF_Instruction;
 
 --    process (Rst)
@@ -237,9 +238,9 @@ begin
     --- External Devices
     ---
 
-    cVGA: VGA port map(Clk25M, Rst, PicData, CharData, CharAddr, PicAddr, Red, Green, Blue, Hs, Vs);
+    cVGA: VGA port map(Clk25M, Rst, PicData, CharData, Pos, CharAddr, PicAddr, Red, Green, Blue, Hs, Vs);
     cCharPicROM: CharPicROM port map(Clk50MBuf, PicAddr, PicData);
-    cVGARAM: VGARAM port map(Clk50MBuf, WriteCharWE, WriteCharAddr, WriteCharData, Clk50MBuf, CharAddr, CharData);
+    cVGARAM: VGARAM port map(ClkMagic, WriteCharWE, WriteCharAddr, WriteCharData, ClkMagic, CharAddr, CharData);
     cKeyBoard: Keyboard port map(KeyboardData, KeyboardClk, Clk5M, KeyboardOut);
 
 
@@ -332,18 +333,13 @@ begin
             elsif EX2MEM_ALUResult = "1011111100000011" then -- VGA Address
                 WriteCharData <= WriteCharDataBuf;
                 WriteCharAddr <= EX2MEM_Forward2Result(11 downto 0);
+            elsif EX2MEM_ALUResult = "1011111100000101" then -- VGA Position
+                Pos <= EX2MEM_Forward2Result(11 downto 0);
             end if;
         end if;
-        if EX2MEM_ALUResult = "1011111100000010" then -- VGA Data
-            Ram1OE <= '1';
-            Ram1WE <= '1';
-            Ram1EN <= '1';
-            Ram1Addr <= (others => '0');
-            Ram1Data <= (others => 'Z');
-            MEM_ReadDataFromMem <= (others => '0');
-            RDN <= '1';
-            WRN <= '1';
-        elsif EX2MEM_ALUResult = "1011111100000011" then -- VGA Address
+        if EX2MEM_ALUResult = "1011111100000010" or
+           EX2MEM_ALUResult = "1011111100000011" or
+           EX2MEM_ALUResult = "1011111100000101" then -- VGA
             Ram1OE <= '1';
             Ram1WE <= '1';
             Ram1EN <= '1';
