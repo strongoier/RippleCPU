@@ -139,6 +139,7 @@ package Definitions is
     constant key_lshft: integer :=102;
     constant key_rshft: integer :=103;
     constant key_esc: integer :=104;
+    constant key_delete: integer :=105;
 
 end Definitions;
 

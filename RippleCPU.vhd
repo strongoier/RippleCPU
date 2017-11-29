@@ -160,9 +160,9 @@ begin
     ---
     --- Debug
     ---
-    cDigital7_Low: Digital7 port map(PC(3 downto 0), DYP1);
+    cDigital7_Low: Digital7 port map(KeyboardOut(3 downto 0), DYP1);
     --cDigital7_Low: Digital7 port map(KeyboardOut(3 downto 0), DYP1);
-    cDigital7_High: Digital7 port map(PC(7 downto 4), DYP0);
+    cDigital7_High: Digital7 port map(KeyboardOut(7 downto 4), DYP0);
     L <= IF_Instruction;
 
 --    process (Rst)
